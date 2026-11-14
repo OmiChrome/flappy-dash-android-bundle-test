@@ -45,7 +45,8 @@ pid=$($ADB shell pidof "$pkg" | tr -d '\r')
 $ADB exec-out screencap -p > "$out/$name-start.png"
 smoke=ok
 [ -z "$pid" ] && smoke=crashed
-$ADB logcat -d | grep -qE "FATAL EXCEPTION|Fatal signal|has died" && smoke=crashed
+# only count crashes of THIS app (other apps closed by the test also log "has died")
+$ADB logcat -d | grep -E "FATAL EXCEPTION|Fatal signal|has died" -A2 | grep -q "$pkg" && smoke=crashed
 log "smoke $smoke (pid ${pid:-none})"
 
 # --- start the benchmark

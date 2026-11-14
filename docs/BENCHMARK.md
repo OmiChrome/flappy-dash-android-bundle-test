@@ -44,6 +44,7 @@ Every app ran the **same 60-second autopilot course** on the same emulator ([how
 **Read this before comparing**
 - The emulator has **no real GPU**. It draws in software at 30 Hz, so every fps number is low. A real phone is many times faster. Use the table to see **who is faster than whom**, not real speeds.
 - ¹ Slint draws a slightly simpler picture (circles and rectangles instead of curved paths and gradients). That helps its fps. Its cold start, RAM and size are still directly comparable.
+- Two emulator runs gave the same ranking (run-to-run variation is about ±15 %).
 - ² Capacitor's benchmark button is inside a web page, which the test robot couldn't press. Its start, RAM and CPU were measured.
 
 ## 3. Verdict

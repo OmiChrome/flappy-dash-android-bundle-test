@@ -113,12 +113,27 @@
    "avgFps": null,
    "low1Fps": null,
    "droppedPct": null
+  },
+  {
+   "name": "rust-tauri",
+   "apkMB": 9.66,
+   "coldStartMs": 1120,
+   "pssAvgMB": 91,
+   "cpuPct": 93.5,
+   "avgFps": null,
+   "low1Fps": null,
+   "droppedPct": null,
+   "run": "https://github.com/OmiChrome/flappy-dash-android-bundle-test/actions/runs/43587238060"
   }
  ],
  "issues": {
   "rust-macroquad": "exits right after launch on the x86_64 emulator image (crash before first frame)",
   "capacitor": "benchmark could not be started by automation (WebView buttons not in the accessibility tree); smoke/RAM/CPU/cold start measured",
   "rust-bevy": "no benchmark result logged within 100 s; smoke/RAM/CPU/cold start measured",
-  "rust-tauri": "APK added after this run"
+  "rust-tauri": "WebView benchmark button not reachable by automation (like Capacitor); smoke/RAM/CPU/cold start measured"
+ },
+ "second_run": {
+  "url": "https://github.com/OmiChrome/flappy-dash-android-bundle-test/actions/runs/43587238060",
+  "note": "same ranking; values within about \u00b115 %"
  }
 }
