@@ -1,7 +1,7 @@
 # One workspace for every Rust port: they share the game engine (core) and one build cache.
 [workspace]
 resolver = "2"
-members = ["core", "macroquad", "slint", "bevy"]
+members = ["core", "macroquad", "slint", "bevy", "dioxus"]
 
 [profile.release]
 opt-level = 3
@@ -9,3 +9,9 @@ lto = true
 codegen-units = 1
 panic = "abort"
 strip = true
+
+# web builds (Dioxus): wasm-bindgen needs the custom sections that `strip` removes
+[profile.wasm-release]
+inherits = "release"
+strip = false
+opt-level = "z"

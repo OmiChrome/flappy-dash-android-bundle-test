@@ -1,0 +1,14 @@
+[package]
+name = "flappy_dioxus"
+version = "1.0.0"
+edition = "2021"
+
+[dependencies]
+flappy_core = { path = "../core" }
+dioxus = { version = "0.7.10", features = [] }
+
+[features]
+default = []
+web = ["dioxus/web"]
+desktop = ["dioxus/desktop"]
+mobile = ["dioxus/mobile"]
