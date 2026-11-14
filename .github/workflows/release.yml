@@ -50,7 +50,6 @@ jobs:
           - { profile: preview-armv7,   platform: android, file: expo-android-armeabi-v7a.apk }
           - { profile: preview-x86_64,  platform: android, file: expo-android-x86_64.apk }
           - { profile: preview-x86,     platform: android, file: expo-android-x86.apk }
-          - { profile: production,      platform: android, file: expo-android-playstore.aab }
           - { profile: ios-simulator,   platform: ios,     file: expo-ios-simulator.tar.gz }
     steps:
       - uses: actions/checkout@v4
@@ -72,6 +71,23 @@ jobs:
           ls -la out
       - uses: actions/upload-artifact@v4
         with: { name: '${{ matrix.profile }}', path: out/ }
+
+  android-aab:
+    # Play Store bundle, built on the GitHub runner (16 GB RAM). EAS's free worker ran out of memory in R8.
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 17 }
+      - run: bun install --frozen-lockfile
+      - run: bunx expo prebuild -p android --no-install
+        env: { EXPO_ANDROID_MINIFY: '1' }
+      - run: cd android && ./gradlew bundleRelease --no-daemon -Dorg.gradle.jvmargs=-Xmx6g
+      - run: mkdir -p out && cp android/app/build/outputs/bundle/release/app-release.aab out/expo-android-playstore.aab
+      - uses: actions/upload-artifact@v4
+        with: { name: android-aab, path: out/ }
 
   ios-device-unsigned:
     # Unsigned device build, only to measure real iOS app size (no Apple account needed).
@@ -112,7 +128,7 @@ jobs:
         with: { name: web, path: out/ }
 
   release:
-    needs: [eas, ios-device-unsigned, web]
+    needs: [eas, android-aab, ios-device-unsigned, web]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     steps:
