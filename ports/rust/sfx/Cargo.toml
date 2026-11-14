@@ -6,6 +6,9 @@ description = "Sound effects + vibration for the native Rust ports (same .wav fi
 
 [dependencies]
 flappy_core = { path = "../core" }
+
+# no cpal on the web: the browser builds use HTML audio
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 cpal = { version = "0.18", optional = true }
 
 [target.'cfg(target_os = "android")'.dependencies]
@@ -14,5 +17,4 @@ ndk-context = "0.1"
 
 [features]
 default = ["audio"]
-# off for apps that bring their own audio (macroquad)
 audio = ["dep:cpal"]

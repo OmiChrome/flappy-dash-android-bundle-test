@@ -1,6 +1,7 @@
 //! Flappy Dash - Dioxus port. React-style Rust UI: each frame the shared draw list
 //! (flappy_core::draw) becomes SVG circles/rects in RSX; Dioxus diffs and patches the WebView DOM.
 //! The frame clock is the WebView's requestAnimationFrame, sent to Rust through `eval`.
+//! Sounds: the shared .wav files, decoded once by the page's Web Audio; vibration via navigator.vibrate.
 use dioxus::prelude::*;
 use flappy_core::draw::{draw_list, Prim};
 use flappy_core::{bench_stats, report, Game, Phase, WORLD_H};
@@ -12,6 +13,35 @@ fn main() {
 struct Bench { on: bool, ms: f64, times: Vec<f64>, result: Option<Vec<String>> }
 
 fn hex(c: u32) -> String { format!("#{c:06X}") }
+
+fn base64(b: &[u8]) -> String {
+    const T: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    let mut s = String::with_capacity(b.len() * 4 / 3 + 4);
+    for c in b.chunks(3) {
+        let n = (c[0] as u32) << 16 | (*c.get(1).unwrap_or(&0) as u32) << 8 | *c.get(2).unwrap_or(&0) as u32;
+        for i in 0..4 { s.push(if i <= c.len() { T[(n >> (18 - 6 * i) & 63) as usize] as char } else { '=' }); }
+    }
+    s
+}
+
+fn sfx_name(s: flappy_sfx::Sfx) -> String { format!("{s:?}").to_lowercase() }
+
+// Plays what Rust sends: first the clips, then one [names, vibrate_ms] message per frame with events.
+const SFX_JS: &str = r#"const C = new (window.AudioContext || window.webkitAudioContext)();
+    const bufs = {};
+    for (const [n, uri, v] of await dioxus.recv()) {
+      fetch(uri).then(r => r.arrayBuffer()).then(b => C.decodeAudioData(b)).then(d => { bufs[n] = [d, v]; }).catch(() => {});
+    }
+    addEventListener('pointerdown', () => { if (C.state !== 'running') C.resume(); }, { capture: true });
+    while (true) {
+      const [names, buzz] = await dioxus.recv();
+      for (const n of names) {
+        const e = bufs[n]; if (!e) continue;
+        const s = C.createBufferSource(), g = C.createGain();
+        s.buffer = e[0]; g.gain.value = e[1]; s.connect(g).connect(C.destination); s.start();
+      }
+      if (buzz && navigator.vibrate) navigator.vibrate(buzz);
+    }"#;
 
 #[component]
 fn App() -> Element {
@@ -30,6 +60,10 @@ fn App() -> Element {
                requestAnimationFrame(f);
                await new Promise(() => {});"#,
         );
+        let sfx = document::eval(SFX_JS);
+        let clips: Vec<(String, String, f32)> = flappy_sfx::WAVS.iter().filter(|w| w.0 != flappy_sfx::Sfx::Best)
+            .map(|(k, b, v)| (sfx_name(*k), format!("data:audio/wav;base64,{}", base64(b)), *v)).collect();
+        let _ = sfx.send(clips);
         let mut last = -1.0f64;
         while let Ok([t, w, h]) = js.recv::<[f64; 3]>().await {
             if last < 0.0 { game.write().seed = (t * 1000.0) as i32 | 1; }
@@ -41,6 +75,11 @@ fn App() -> Element {
             g.set_width(world_w);
             let before = g.phase;
             g.advance((dt / 1000.0) as f32);
+            let ev = g.take_events();
+            if ev != 0 && !g.bot {
+                let (names, buzz) = flappy_sfx::reactions(ev);
+                let _ = sfx.send((names.into_iter().map(sfx_name).collect::<Vec<_>>(), buzz));
+            }
             {
                 let mut b = bench.write();
                 if b.on && dt > 0.0 {

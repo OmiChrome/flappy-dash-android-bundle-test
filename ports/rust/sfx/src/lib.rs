@@ -61,7 +61,7 @@ pub fn decode_wav(b: &[u8]) -> Option<(Vec<f32>, u32)> {
     None
 }
 
-#[cfg(feature = "audio")]
+#[cfg(all(feature = "audio", not(target_arch = "wasm32")))]
 mod audio {
     use super::*;
     use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
@@ -141,12 +141,12 @@ mod audio {
 
 /// Opens the audio device early so the first flap isn't delayed.
 pub fn init() {
-    #[cfg(feature = "audio")]
+    #[cfg(all(feature = "audio", not(target_arch = "wasm32")))]
     audio::init();
 }
 
 pub fn play(_s: Sfx) {
-    #[cfg(feature = "audio")]
+    #[cfg(all(feature = "audio", not(target_arch = "wasm32")))]
     audio::play(_s);
 }
 
@@ -158,18 +158,18 @@ mod haptics {
 
     struct Ctx { vm: JavaVM, vibrator: GlobalRef }
     static CTX: OnceLock<Option<Ctx>> = OnceLock::new();
-    static OVERRIDE: OnceLock<(usize, usize)> = OnceLock::new();
 
-    pub unsafe fn use_context(vm: *mut std::ffi::c_void, activity: *mut std::ffi::c_void) {
-        let _ = OVERRIDE.set((vm as usize, activity as usize));
+    // Fills ndk_context, which both this module and cpal (audio) read.
+    pub unsafe fn use_env(env: *mut std::ffi::c_void, activity: *mut std::ffi::c_void) {
+        let Ok(env) = jni::JNIEnv::from_raw(env.cast()) else { return };
+        let Ok(vm) = env.get_java_vm() else { return };
+        let act = env.new_global_ref(jni::objects::JObject::from_raw(activity.cast())).map(|g| { let p = g.as_obj().as_raw(); std::mem::forget(g); p });
+        if let Ok(act) = act { ndk_context::initialize_android_context(vm.get_java_vm_pointer().cast(), act.cast()); }
     }
 
     fn ctx() -> Option<&'static Ctx> {
         CTX.get_or_init(|| {
-            let (vm, act) = match OVERRIDE.get() {
-                Some(&(vm, act)) => (vm as *mut _, act as *mut _),
-                None => { let c = ndk_context::android_context(); (c.vm(), c.context()) }
-            };
+            let (vm, act) = { let c = ndk_context::android_context(); (c.vm(), c.context()) };
             let vm = unsafe { JavaVM::from_raw(vm.cast()) }.ok()?;
             let vibrator = {
                 let mut env = vm.attach_current_thread_permanently().ok()?;
@@ -202,14 +202,15 @@ pub fn vibrate(_ms: u32) {
     haptics::vibrate(_ms);
 }
 
-/// For apps whose Android glue doesn't fill `ndk_context` (macroquad): pass the JavaVM and Activity.
+/// For apps whose Android glue doesn't fill `ndk_context` (macroquad): pass a JNIEnv of the current
+/// thread and the Activity object. Call once, before the first sound.
 ///
 /// # Safety
-/// Both pointers must be valid for the life of the app.
+/// `env` must be a valid JNIEnv for this thread; `activity` must stay valid for the life of the app.
 #[allow(unused_variables)]
-pub unsafe fn use_android_context(vm: *mut std::ffi::c_void, activity: *mut std::ffi::c_void) {
+pub unsafe fn use_android_env(env: *mut std::ffi::c_void, activity: *mut std::ffi::c_void) {
     #[cfg(target_os = "android")]
-    haptics::use_context(vm, activity);
+    haptics::use_env(env, activity);
 }
 
 #[cfg(test)]

@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'engine.dart';
+import 'sfx.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -222,6 +223,7 @@ class GameScreen extends StatefulWidget {
 class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateMixin {
   final game = Game(360, DateTime.now().microsecondsSinceEpoch.toSigned(32));
   final art = Art();
+  final sfx = Sfx();
   final frame = ValueNotifier<int>(0);
   late final Ticker ticker;
   Duration? last;
@@ -245,6 +247,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
     last = now;
     final before = game.phase;
     game.advance(dtMs / 1000);
+    sfx.frame(game, silent: game.bot);
     if (benchOn && dtMs > 0) {
       times.add(dtMs);
       benchMs += dtMs;
@@ -256,7 +259,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
   }
 
   @override
-  void dispose() { ticker.dispose(); super.dispose(); }
+  void dispose() { ticker.dispose(); sfx.dispose(); super.dispose(); }
 
   void _tap() {
     if (result != null) { setState(() => result = null); return; }

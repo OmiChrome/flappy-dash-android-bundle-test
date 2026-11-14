@@ -278,6 +278,12 @@ async fn main() {
     let mut bench_ms = 0.0f64;
     let mut times: Vec<f64> = Vec::with_capacity(10000);
     let mut result: Option<Vec<String>> = None;
+    // sounds + vibration (flappy_sfx). miniquad doesn't fill ndk_context, so hand over its JNI handles.
+    #[cfg(target_os = "android")]
+    unsafe {
+        use macroquad::miniquad::native::android as droid;
+        flappy_sfx::use_android_env(droid::attach_jni_env().cast(), droid::ACTIVITY.cast());
+    }
 
     loop {
         let (sw, sh) = (screen_width(), screen_height());
@@ -285,6 +291,8 @@ async fn main() {
         let dt = get_frame_time();
         let before = g.phase;
         g.advance(dt);
+        let ev = g.take_events();
+        if !g.bot { flappy_sfx::on_events(ev); }
         if bench_on {
             times.push(dt as f64 * 1000.0);
             bench_ms += dt as f64 * 1000.0;

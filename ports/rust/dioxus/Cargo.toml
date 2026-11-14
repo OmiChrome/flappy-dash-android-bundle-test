@@ -5,6 +5,8 @@ edition = "2021"
 
 [dependencies]
 flappy_core = { path = "../core" }
+# only the shared sound rules + .wav files; the page plays them with Web Audio
+flappy_sfx = { path = "../sfx", default-features = false }
 dioxus = { version = "0.7.10", features = [] }
 
 [features]

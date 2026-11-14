@@ -8,6 +8,7 @@ crate-type = ["lib", "cdylib"]
 
 [dependencies]
 flappy_core = { path = "../core" }
+flappy_sfx = { path = "../sfx" }
 bevy = { version = "0.20.1", default-features = false, features = [
   "std", "bevy_winit", "bevy_window", "default_app", "2d_bevy_render", "bevy_text", "default_font", "multi_threaded",
 ] }
@@ -23,6 +24,9 @@ package = "com.flappydash.bevy"
 apk_name = "flappy_bevy"
 build_targets = ["aarch64-linux-android"]
 resources = "../macroquad/android_res"
+
+[[package.metadata.android.uses_permission]]
+name = "android.permission.VIBRATE"
 
 [package.metadata.android.sdk]
 min_sdk_version = 26

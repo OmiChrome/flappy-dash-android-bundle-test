@@ -96,6 +96,8 @@ pub fn run() {
         s.game.set_width(w);
         let before = s.game.phase;
         s.game.advance((dt / 1000.0) as f32);
+        let ev = s.game.take_events();
+        if !s.game.bot { flappy_sfx::on_events(ev); }
         if s.bench_on && dt > 0.0 {
             s.times.push(dt);
             s.bench_ms += dt;
