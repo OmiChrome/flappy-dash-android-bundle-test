@@ -1,0 +1,6 @@
+{
+  "appId": "com.flappydash.capacitor",
+  "appName": "Flappy Dash (Capacitor)",
+  "webDir": "www",
+  "android": { "buildOptions": { "releaseType": "APK" } }
+}
