@@ -27,9 +27,9 @@ Android APK for one **arm64** phone, release build, the same game in each:
 ```mermaid
 xychart-beta
     title "APK size for an arm64 phone (MB, smaller is better)"
-    x-axis ["Java/Views", "Rust/macroquad", "Kotlin/Compose", "Capacitor", "Flutter"]
-    y-axis "MB" 0 --> 20
-    bar [0.07, 0.43, 0.83, 5.24, 14.95]
+    x-axis ["Java/Views", "Rust/macroquad", "Kotlin/Compose", "Capacitor", "Flutter", "Expo/RN"]
+    y-axis "MB" 0 --> 50
+    bar [0.07, 0.43, 0.83, 5.24, 14.95, 44.14]
 ```
 
 | | Framework | Language | Renders with | APK (arm64) | Universal APK | Web download |
@@ -39,7 +39,9 @@ xychart-beta
 | ![](https://cdn.simpleicons.org/kotlin/7F52FF) | **Kotlin + Jetpack Compose** | Kotlin | Compose Canvas | **0.83 MB** | 0.83 MB | – |
 | ![](https://cdn.simpleicons.org/capacitor/119EFF) | **Capacitor** (Expo web in a WebView) | TS/React | system WebView + CanvasKit | **5.24 MB** | 5.24 MB | (same as Expo web) |
 | ![](https://cdn.simpleicons.org/flutter/02569B) | **Flutter** | Dart | Impeller/Skia (bundled engine) | **14.95 MB** | 41.8 MB | 7.36 MB |
-| ![](https://cdn.simpleicons.org/expo/000020) | **Expo / React Native** | TS/React | react-native-skia + Reanimated | ⏳ *(EAS build running)* | 141.8 MB | 10.79 MB |
+| ![](https://cdn.simpleicons.org/expo/000020) | **Expo / React Native** | TS/React | react-native-skia + Reanimated | **44.14 MB** | 141.8 MB | 10.79 MB |
+
+Per-CPU Expo APKs: arm64 44.1 MB · armv7 33.3 MB · x86_64 45.0 MB · x86 45.9 MB. Flutter: armv7 12.5 MB · x86_64 16.1 MB (Flutter no longer builds 32-bit x86). Rust: 0.42–0.48 MB for every CPU.
 
 <sub>Sizes are measured from the actual release files (`bench/apk-size.py`). Universal APK = one file for all CPU types (arm64, armv7, x86_64, x86). Web download = bytes a first-time visitor loads, uncompressed (`bench/web-transfer.cjs`). Java and Kotlin need no native code, so one tiny APK covers every CPU.</sub>
 
@@ -47,7 +49,7 @@ xychart-beta
 
 | Framework | Biggest parts |
 |---|---|
-| Expo / React Native | `librnskia.so` **13.7 MB** · `libreactnative.so` 6.7 MB · `libhermesvm.so` 2.6 MB · Reanimated + Worklets 2.8 MB · Expo modules 1.5 MB · JS bundle (Hermes bytecode) ≈ 4.6 MB raw |
+| Expo / React Native | `librnskia.so` **13.7 MB** · `libreactnative.so` 6.7 MB · `libhermesvm.so` 2.6 MB · Reanimated + Worklets 2.8 MB · Expo modules 1.5 MB · code (dex, after R8) 3.4 MB · JS bundle + assets 3.6 MB |
 | Flutter | `libflutter.so` (engine) **10.8 MB** · `libapp.so` (our Dart code, AOT) 3.1 MB |
 | Capacitor | web assets 4.1 MB (CanvasKit wasm + JS bundle) · dex 0.45 MB. The engine is the phone's own WebView, so it isn't counted |
 | Kotlin + Compose | dex 0.6 MB (Compose runtime after R8 shrinking) |
