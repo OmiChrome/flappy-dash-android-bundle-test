@@ -297,15 +297,15 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with: { workspaces: ports/rust/tauri, key: tauri }
       - run: bun install --frozen-lockfile
-      - run: npm i -g @tauri-apps/cli@2.12.4
+      - run: cd ports/rust/tauri && npm install
       - name: Web build for the WebView (Expo export)
         run: bun run export:web && rm -rf ports/rust/tauri/www && cp -r dist ports/rust/tauri/www
       - name: Android APKs (one per ABI)
         working-directory: ports/rust/tauri
         run: |
           export NDK_HOME="$ANDROID_NDK_LATEST_HOME" ANDROID_NDK_HOME="$ANDROID_NDK_LATEST_HOME"
-          tauri android init --ci
-          tauri android build --apk --split-per-abi
+          npx tauri android init --ci
+          npx tauri android build --apk --split-per-abi
           [ -f ../debug.keystore ] || keytool -genkeypair -keystore ../debug.keystore -storepass android -keypass android -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
           signer=$(ls "$ANDROID_HOME"/build-tools/*/apksigner | tail -1)
           mkdir -p ../../../out
