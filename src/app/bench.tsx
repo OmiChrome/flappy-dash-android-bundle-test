@@ -40,7 +40,12 @@ export default function BenchScreen() {
   const bench = useMemo<Bench>(() => ({
     seconds: SECONDS,
     seed: SEED,
-    onDone: (times, score) => setResult({ stats: benchStats(times), score }),
+    onDone: (times, score) => {
+      const stats = benchStats(times);
+      // one line for the emulator CI (bench/emulator-bench.sh reads it from logcat)
+      console.log(`RESULT framework=expo | avg ${stats.avgFps.toFixed(1)} fps | 1% low ${stats.low1Fps.toFixed(0)} | dropped ${stats.droppedPct.toFixed(1)}% | p50 ${stats.p50.toFixed(1)} | p95 ${stats.p95.toFixed(1)} | p99 ${stats.p99.toFixed(1)} | max ${stats.worst.toFixed(1)} ms | frames ${stats.frames} | display ${stats.refreshHz} Hz`);
+      setResult({ stats, score });
+    },
   }), []);
 
   const meta = {
