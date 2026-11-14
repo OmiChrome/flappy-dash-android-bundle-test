@@ -1,0 +1,223 @@
+name: Ports
+
+# Builds every framework port for every target it supports and attaches the files to a release.
+#   Actions -> Ports -> Run workflow (tag = an existing or new release tag)
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to attach the builds to (e.g. v2.0.0)'
+        required: true
+
+permissions:
+  contents: write
+
+env:
+  TAG: ${{ github.event.inputs.tag }}
+
+jobs:
+  # ---------------------------------------------------------------- Android (JVM)
+  kotlin-compose:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: ports/kotlin-compose } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 21 }
+      - run: ./gradlew assembleRelease bundleRelease --no-daemon
+      - run: |
+          mkdir -p ../../out
+          cp app/build/outputs/apk/release/app-release.apk ../../out/kotlin-compose-android.apk
+          cp app/build/outputs/bundle/release/app-release.aab ../../out/kotlin-compose-android.aab
+      - uses: actions/upload-artifact@v4
+        with: { name: kotlin-compose, path: out/ }
+
+  java-views:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: ports/java-views } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 21 }
+      - run: ./gradlew assembleRelease bundleRelease --no-daemon
+      - run: |
+          mkdir -p ../../out
+          cp app/build/outputs/apk/release/app-release.apk ../../out/java-views-android.apk
+          cp app/build/outputs/bundle/release/app-release.aab ../../out/java-views-android.aab
+      - uses: actions/upload-artifact@v4
+        with: { name: java-views, path: out/ }
+
+  # ---------------------------------------------------------------- Flutter
+  flutter-linux:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: ports/flutter } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 21 }
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable }
+      - run: sudo apt-get update && sudo apt-get install -y ninja-build libgtk-3-dev clang cmake pkg-config
+      - run: flutter test
+      - run: flutter build apk --release --split-per-abi
+      - run: flutter build apk --release
+      - run: flutter build appbundle --release
+      - run: flutter build web --release
+      - run: flutter build linux --release
+      - run: |
+          o=../../out; mkdir -p $o
+          for a in arm64-v8a armeabi-v7a x86_64; do cp build/app/outputs/flutter-apk/app-$a-release.apk $o/flutter-android-$a.apk; done
+          cp build/app/outputs/flutter-apk/app-release.apk $o/flutter-android-universal.apk
+          cp build/app/outputs/bundle/release/app-release.aab $o/flutter-android.aab
+          (cd build/web && zip -qr ../../$o/flutter-web.zip .)
+          (cd build/linux/x64/release/bundle && tar czf ../../../../../$o/flutter-linux-x64.tar.gz .)
+      - uses: actions/upload-artifact@v4
+        with: { name: flutter-linux, path: out/ }
+
+  flutter-windows:
+    runs-on: windows-latest
+    defaults: { run: { working-directory: ports/flutter, shell: bash } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable }
+      - run: flutter build windows --release
+      - run: mkdir -p ../../out && cd build/windows/x64/runner/Release && 7z a -tzip ../../../../../../../out/flutter-windows-x64.zip . > /dev/null
+      - uses: actions/upload-artifact@v4
+        with: { name: flutter-windows, path: out/ }
+
+  flutter-apple:
+    runs-on: macos-latest
+    defaults: { run: { working-directory: ports/flutter } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable }
+      - run: flutter build macos --release
+      - run: flutter build ios --release --no-codesign
+      - run: |
+          o=../../out; mkdir -p $o
+          (cd build/macos/Build/Products/Release && zip -qry ../../../../../$o/flutter-macos.zip *.app)
+          mkdir -p Payload && cp -R build/ios/iphoneos/Runner.app Payload/
+          zip -qry $o/flutter-ios-device-unsigned.ipa Payload
+      - uses: actions/upload-artifact@v4
+        with: { name: flutter-apple, path: out/ }
+
+  # ---------------------------------------------------------------- Rust (macroquad)
+  rust-android:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: ports/rust-macroquad } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 17 }
+      - uses: dtolnay/rust-toolchain@stable
+        with: { targets: 'aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android,i686-linux-android' }
+      - run: cargo test --release
+      - run: cargo install --locked --git https://github.com/not-fl3/cargo-quad-apk
+      - name: One APK per ABI
+        env: { NDK_HOME: '${{ env.ANDROID_NDK_LATEST_HOME }}' }
+        run: |
+          mkdir -p ../../out
+          for t in aarch64-linux-android:arm64-v8a armv7-linux-androideabi:armeabi-v7a x86_64-linux-android:x86_64 i686-linux-android:x86; do
+            sed -i "s/^build_targets = .*/build_targets = [\"${t%%:*}\"]/" Cargo.toml
+            cargo quad-apk build --release
+            cp target/android-artifacts/release/apk/flappy_dash.apk ../../out/rust-android-${t##*:}.apk
+          done
+      - uses: actions/upload-artifact@v4
+        with: { name: rust-android, path: out/ }
+
+  rust-desktop-web:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest, name: linux-x64 }
+          - { os: windows-latest, name: windows-x64 }
+          - { os: macos-latest, name: macos-arm64 }
+    runs-on: ${{ matrix.os }}
+    defaults: { run: { working-directory: ports/rust-macroquad, shell: bash } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with: { targets: 'wasm32-unknown-unknown' }
+      - if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libx11-dev libxi-dev libgl1-mesa-dev libasound2-dev
+      - run: cargo build --release
+      - run: |
+          mkdir -p ../../out
+          if [ "$RUNNER_OS" = Windows ]; then cp target/release/flappy_dash.exe ../../out/rust-windows-x64.exe; else cp target/release/flappy_dash ../../out/rust-${{ matrix.name }}; fi
+      - if: runner.os == 'Linux'
+        run: |
+          cargo build --release --target wasm32-unknown-unknown
+          cp target/wasm32-unknown-unknown/release/flappy_dash.wasm web/
+          (cd web && zip -qr ../../../out/rust-web.zip .)
+      - uses: actions/upload-artifact@v4
+        with: { name: 'rust-${{ matrix.name }}', path: out/ }
+
+  rust-ios:
+    runs-on: macos-latest
+    defaults: { run: { working-directory: ports/rust-macroquad } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with: { targets: 'aarch64-apple-ios,aarch64-apple-ios-sim' }
+      - name: Build unsigned .app bundles (device + simulator)
+        run: |
+          mkdir -p ../../out
+          for t in aarch64-apple-ios:device aarch64-apple-ios-sim:simulator; do
+            cargo build --release --target ${t%%:*}
+            app=FlappyDash.app; rm -rf $app; mkdir $app
+            cp target/${t%%:*}/release/flappy_dash $app/
+            cat > $app/Info.plist <<'PLIST'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0"><dict>
+            <key>CFBundleExecutable</key><string>flappy_dash</string>
+            <key>CFBundleIdentifier</key><string>com.flappydash.rust</string>
+            <key>CFBundleName</key><string>Flappy Dash</string>
+            <key>CFBundleVersion</key><string>1</string>
+            <key>CFBundleShortVersionString</key><string>1.0.0</string>
+            <key>UILaunchStoryboardName</key><string></string>
+            <key>UIRequiresFullScreen</key><true/>
+          </dict></plist>
+          PLIST
+            if [ ${t##*:} = device ]; then mkdir -p Payload && rm -rf Payload/* && cp -R $app Payload/ && zip -qry ../../out/rust-ios-device-unsigned.ipa Payload
+            else zip -qry ../../out/rust-ios-simulator.zip $app; fi
+          done
+      - uses: actions/upload-artifact@v4
+        with: { name: rust-ios, path: out/ }
+
+  # ---------------------------------------------------------------- Capacitor (WebView shell)
+  capacitor-android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 21 }
+      - run: bun install --frozen-lockfile
+      - run: cd ports/capacitor && bun install && ./build-android.sh
+      - uses: actions/upload-artifact@v4
+        with: { name: capacitor-android, path: out/ }
+
+  # ---------------------------------------------------------------- publish
+  release:
+    needs: [kotlin-compose, java-views, capacitor-android, flutter-linux, flutter-windows, flutter-apple, rust-android, rust-desktop-web, rust-ios]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { path: dl }
+      - name: Attach to release
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          mkdir -p files && find dl -type f -exec cp {} files/ \;
+          ls -la files
+          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --target "${{ github.sha }}" --title "Flappy Dash ${TAG#v}" --notes "Builds for every framework. See README for the comparison."
+          gh release upload "$TAG" files/* --clobber
+          {
+            echo "| Port file | Size |"; echo "|---|---:|"
+            for f in files/*; do printf '| `%s` | %s |\n' "$(basename "$f")" "$(numfmt --to=iec-i --suffix=B --format='%.1f' "$(stat -c%s "$f")")"; done
+          } >> "$GITHUB_STEP_SUMMARY"
