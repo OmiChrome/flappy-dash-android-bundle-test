@@ -1,4 +1,6 @@
-//! Flappy Dash engine - port of src/game/engine.ts (see ports/SPEC.md).
+//! Flappy Dash engine - port of src/game/engine.ts (see ports/SPEC.md). Shared by every Rust port.
+
+pub mod draw;
 use std::f32::consts::PI;
 
 pub const WORLD_H: f32 = 640.0;
@@ -285,5 +287,22 @@ mod tests {
         let mut got = vec![];
         for i in 0..120 * 30 { g.tick(1.0 / 120.0); if i % 1200 == 1199 { got.push((g.score, g.stars, g.spawned)); } }
         assert_eq!(got, vec![(4, 0, 6), (15, 4, 13), (23, 4, 20)]);
+    }
+}
+
+/// Prints benchmark results; on Android also writes them to logcat with tag `FlappyBench`
+/// so the emulator CI (bench/emulator-bench.sh) can collect them.
+pub fn report(framework: &str, lines: &[String]) {
+    let msg = format!("RESULT framework={framework} | {}", lines[1..lines.len().saturating_sub(1)].join(" | "));
+    println!("{msg}");
+    #[cfg(target_os = "android")]
+    {
+        #[link(name = "log")]
+        extern "C" {
+            fn __android_log_write(prio: i32, tag: *const std::os::raw::c_char, text: *const std::os::raw::c_char) -> i32;
+        }
+        let tag = std::ffi::CString::new("FlappyBench").unwrap();
+        let text = std::ffi::CString::new(msg).unwrap_or_default();
+        unsafe { __android_log_write(4, tag.as_ptr(), text.as_ptr()); }
     }
 }

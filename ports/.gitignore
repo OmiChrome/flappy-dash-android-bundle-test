@@ -8,4 +8,6 @@ local.properties
 .cxx/
 *.iml
 .idea/
-/rust-macroquad/web/flappy_dash.wasm
+rust/macroquad/web/flappy_dash.wasm
+rust/target/
+rust/debug.keystore

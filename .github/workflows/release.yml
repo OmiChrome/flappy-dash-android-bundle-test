@@ -76,6 +76,7 @@ jobs:
     # Play Store bundle, built on the GitHub runner (16 GB RAM). EAS's free worker ran out of memory in R8.
     needs: check
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
@@ -84,7 +85,7 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bunx expo prebuild -p android --no-install
         env: { EXPO_ANDROID_MINIFY: '1' }
-      - run: cd android && ./gradlew bundleRelease --no-daemon -Dorg.gradle.jvmargs=-Xmx6g
+      - run: cd android && ./gradlew bundleRelease --no-daemon --max-workers=2 -Dorg.gradle.jvmargs='-Xmx4g -XX:MaxMetaspaceSize=1g'
       - run: mkdir -p out && cp android/app/build/outputs/bundle/release/app-release.aab out/expo-android-playstore.aab
       - uses: actions/upload-artifact@v4
         with: { name: android-aab, path: out/ }

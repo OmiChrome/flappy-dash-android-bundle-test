@@ -1,0 +1,11 @@
+# One workspace for every Rust port: they share the game engine (core) and one build cache.
+[workspace]
+resolver = "2"
+members = ["core", "macroquad", "slint", "bevy"]
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
