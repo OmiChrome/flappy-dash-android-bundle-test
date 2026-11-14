@@ -4,3 +4,6 @@ dist-android
 .expo
 *.log
 .env*
+public/canvaskit.wasm
+expo-env.d.ts
+.expo/

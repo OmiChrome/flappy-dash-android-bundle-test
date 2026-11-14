@@ -57,7 +57,7 @@ jobs:
       - uses: oven-sh/setup-bun@v2
       - run: bun install --frozen-lockfile
       - run: test -n "$EXPO_TOKEN" || { echo "::error::Add the EXPO_TOKEN repo secret"; exit 1; }
-      - run: bunx expo export -p web
+      - run: bun run export:web
       - run: bunx eas-cli deploy --prod --non-interactive
 
   release:
