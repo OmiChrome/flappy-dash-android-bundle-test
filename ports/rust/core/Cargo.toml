@@ -1,0 +1,7 @@
+[package]
+name = "flappy_core"
+version = "1.0.0"
+edition = "2021"
+description = "Flappy Dash game engine (port of src/game/engine.ts), shared by every Rust port"
+
+[dependencies]

@@ -1,0 +1,38 @@
+[package]
+name = "flappy_slint"
+version = "1.0.0"
+edition = "2021"
+
+[lib]
+crate-type = ["lib", "cdylib"]
+
+[dependencies]
+flappy_core = { path = "../core" }
+slint = { version = "1.18.1", default-features = false, features = ["std", "compat-1-2", "renderer-femtovg"] }
+
+[target.'cfg(not(target_os = "android"))'.dependencies]
+slint = { version = "1.18.1", default-features = false, features = ["std", "compat-1-2", "backend-winit", "renderer-femtovg"] }
+
+[target.'cfg(target_os = "android")'.dependencies]
+slint = { version = "1.18.1", default-features = false, features = ["std", "compat-1-2", "backend-android-activity-06", "renderer-femtovg"] }
+
+[package.metadata.android]
+package = "com.flappydash.slint"
+apk_name = "flappy_slint"
+build_targets = ["aarch64-linux-android"]
+resources = "../macroquad/android_res"
+
+[package.metadata.android.sdk]
+min_sdk_version = 24
+target_sdk_version = 35
+
+[package.metadata.android.application]
+label = "Flappy Dash (Slint)"
+icon = "@mipmap/ic_launcher"
+
+[package.metadata.android.application.activity]
+orientation = "portrait"
+
+[package.metadata.android.signing.release]
+path = "../debug.keystore"
+keystore_password = "android"

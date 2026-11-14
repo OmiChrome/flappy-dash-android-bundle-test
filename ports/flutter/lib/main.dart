@@ -248,7 +248,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
     if (benchOn && dtMs > 0) {
       times.add(dtMs);
       benchMs += dtMs;
-      if (benchMs >= 60000) { benchOn = false; result = benchStats(times); game..bot = false..reset(); setState(() {}); }
+      if (benchMs >= 60000) { benchOn = false; result = benchStats(times); debugPrint('RESULT framework=flutter | ${result!.sublist(1, 5).join(' | ')}'); game..bot = false..reset(); setState(() {}); }
     }
     if (before != Phase.dead && game.phase == Phase.dead && !game.bot && game.score > best) { best = game.score; prefs?.setInt('best', best); }
     if (game.score != shownScore || game.phase != shownPhase || benchOn) setState(() { shownScore = game.score; shownPhase = game.phase; });

@@ -119,7 +119,7 @@ public final class GameView extends View implements Choreographer.FrameCallback 
         if (benchOn && dtMs > 0) {
             times.add(dtMs);
             benchMs += dtMs;
-            if (benchMs >= 60000) { benchOn = false; benchResult = stats(); g.bot = false; g.reset(); }
+            if (benchMs >= 60000) { benchOn = false; benchResult = stats(); android.util.Log.i("FlappyBench", "RESULT framework=java-views | " + String.join(" | ", java.util.Arrays.copyOfRange(benchResult, 1, 5))); g.bot = false; g.reset(); }
         }
         if (before != DEAD && g.phase == DEAD && !g.bot && g.score > best) { best = g.score; prefs.edit().putInt("best", best).apply(); }
         invalidate();

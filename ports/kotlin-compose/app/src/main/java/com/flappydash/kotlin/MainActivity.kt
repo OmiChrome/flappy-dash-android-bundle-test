@@ -88,7 +88,7 @@ fun GameScreen(prefs: android.content.SharedPreferences) {
                     times.add(dtMs); benchMs += dtMs
                     benchLeft = 60 - (benchMs / 1000).toInt()
                     if (benchMs >= 60000) {
-                        benchOn = false; benchResult = benchStats(times); benchMs = 0.0
+                        benchOn = false; benchResult = benchStats(times).also { r -> android.util.Log.i("FlappyBench", "RESULT framework=kotlin-compose | avg %.1f fps | 1%% low %.0f | dropped %.1f%% | p50 %.1f | p95 %.1f | p99 %.1f | max %.1f ms | frames %d | display %d Hz".format(r.avgFps, r.low1Fps, r.droppedPct, r.p50, r.p95, r.p99, r.worst, r.frames, r.refreshHz)) }; benchMs = 0.0
                         game.bot = false; game.reset()
                     }
                 } else if (!benchOn) benchMs = 0.0

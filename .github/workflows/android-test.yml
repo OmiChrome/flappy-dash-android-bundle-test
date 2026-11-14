@@ -1,0 +1,122 @@
+name: Android emulator tests
+
+# Runs every Android build on a real Android emulator in the cloud (GitHub's Linux runners have KVM,
+# i.e. hardware virtualisation, so the emulator is fast). Two jobs:
+#   ui-test   - instrumented UI test of the Kotlin port (./gradlew connectedDebugAndroidTest)
+#   benchmark - smoke test + benchmark of every app from a GitHub release (same emulator, one after another)
+# Emulator: API 34 (Android 14), google_apis image, x86_64. Numbers are emulator numbers: compare apps
+# with each other, not with a real phone.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag whose APKs to benchmark'
+        required: true
+        default: 'v2.0.0'
+  push:
+    branches: [main]
+    paths: ['ports/kotlin-compose/**', 'bench/emulator-*', '.github/workflows/android-test.yml']
+
+permissions:
+  contents: read
+
+env:
+  TAG: ${{ github.event.inputs.tag || 'v2.0.0' }}
+
+jobs:
+  ui-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 21, cache: gradle, cache-dependency-path: 'ports/kotlin-compose/**/*.gradle*' }
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Build app + test APKs
+        working-directory: ports/kotlin-compose
+        run: ./gradlew assembleDebug assembleDebugAndroidTest --no-daemon
+      - name: Run UI tests on the emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          working-directory: ports/kotlin-compose
+          script: |
+            adb logcat -c
+            ./gradlew connectedDebugAndroidTest --no-daemon || (adb logcat -d > logcat.txt; exit 1)
+      - name: Upload test reports + logcat
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-test-reports
+          path: |
+            ports/kotlin-compose/app/build/reports/androidTests/
+            ports/kotlin-compose/app/build/outputs/androidTest-results/
+            ports/kotlin-compose/logcat.txt
+
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download the x86_64 APKs from the release
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          mkdir -p apks
+          gh release download "$TAG" --dir apks --pattern '*x86_64*.apk' --pattern 'kotlin-compose-android.apk' --pattern 'java-views-android.apk' --pattern 'capacitor-android.apk' --pattern '*slint*.apk' --pattern '*bevy*.apk' --pattern '*dioxus*.apk' --pattern '*tauri*.apk' --pattern '*uniffi*.apk' --pattern '*crux*.apk' || true
+          ls -la apks
+      - name: Write the test plan (which app, how to start its benchmark)
+        run: |
+          # name | apk file | how to start the benchmark (see bench/emulator-bench.sh)
+          cat > plan.txt <<'PLAN'
+          expo|expo-android-x86_64.apk|link:flappydash:///bench
+          kotlin-compose|kotlin-compose-android.apk|tap:Benchmark;0.90
+          java-views|java-views-android.apk|at:0.83
+          flutter|flutter-android-x86_64.apk|tap:Benchmark;0.90
+          capacitor|capacitor-android.apk|tap:Settings,Run benchmark
+          rust-macroquad|rust-android-x86_64.apk|at:0.83
+          rust-slint|rust-slint-android-x86_64.apk|at:0.81
+          rust-bevy|rust-bevy-android-x86_64.apk|at:0.83
+          rust-dioxus|rust-dioxus-android-x86_64.apk|tap:Benchmark
+          rust-tauri|rust-tauri-android-x86_64.apk|tap:Settings,Run benchmark
+          rust-uniffi|rust-uniffi-android-x86_64.apk|tap:Benchmark
+          rust-crux|rust-crux-android-x86_64.apk|tap:Benchmark
+          PLAN
+          sed -i 's/^ *//' plan.txt
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Smoke test + benchmark every app on one emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          ram-size: 4096M
+          disable-animations: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          script: bash bench/emulator-run-all.sh plan.txt apks bench-out
+      - name: Summary
+        if: always()
+        run: |
+          python3 bench/emulator-summary.py bench-out | tee summary.md
+          cat summary.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload results, screenshots, logcat
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: emulator-benchmark
+          path: |
+            bench-out/
+            summary.md

@@ -5,13 +5,7 @@ edition = "2021"
 
 [dependencies]
 macroquad = "0.4.16"
-
-[profile.release]
-opt-level = 3
-lto = true
-codegen-units = 1
-panic = "abort"
-strip = true
+flappy_core = { path = "../core" }
 
 [package.metadata.android]
 package_name = "com.flappydash.rust"

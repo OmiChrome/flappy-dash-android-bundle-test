@@ -1,7 +1,5 @@
 //! Flappy Dash - Rust + macroquad port. Immediate-mode drawing with circles, triangles and meshes.
-mod engine;
-
-use engine::*;
+use flappy_core::*;
 use macroquad::models::{draw_mesh, Mesh, Vertex};
 use macroquad::prelude::*;
 
@@ -290,7 +288,7 @@ async fn main() {
         if bench_on {
             times.push(dt as f64 * 1000.0);
             bench_ms += dt as f64 * 1000.0;
-            if bench_ms >= 60000.0 { bench_on = false; result = Some(bench_stats(&times)); g.bot = false; g.reset(); }
+            if bench_ms >= 60000.0 { bench_on = false; let r = bench_stats(&times); report("macroquad", &r); result = Some(r); g.bot = false; g.reset(); }
         }
         if before != Phase::Dead && g.phase == Phase::Dead && !g.bot && g.score > best { best = g.score; save_best(best); }
 
