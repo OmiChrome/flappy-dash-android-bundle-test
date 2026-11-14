@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Haptics from 'expo-haptics';
+import { ObserveRoot, useObserve } from 'expo-observe';
 import { StatusBar } from 'expo-status-bar';
 import React, { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import { Platform, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
@@ -10,7 +11,8 @@ import { WORLD_H, canRestart, createState, flap, medalFor, resetState, step, typ
 const BEST_KEY = 'flappy.best.v1';
 const buzz = (fn: () => Promise<void>) => { if (Platform.OS !== 'web') fn().catch(() => {}); };
 
-export default function App() {
+function App() {
+  const { markInteractive } = useObserve();
   const { width: sw, height: sh } = useWindowDimensions();
   const worldW = Math.max(280, Math.min(520, (sw / sh) * WORLD_H));
   const scale = sh / WORLD_H;
@@ -24,8 +26,8 @@ export default function App() {
       const n = Number(v) || 0;
       bestRef.current = n;
       setBest(n);
-    }).catch(() => {});
-  }, []);
+    }).catch(() => {}).finally(() => markInteractive()); // startup work done: game is playable
+  }, [markInteractive]);
 
   // keep world width in sync with window size (rotation / web resize)
   useEffect(() => {
@@ -138,6 +140,8 @@ export default function App() {
     </View>
   );
 }
+
+export default ObserveRoot.wrap(App);
 
 const outline = { textShadowColor: '#3B2A1A', textShadowRadius: 0 } as const;
 const styles = StyleSheet.create({
