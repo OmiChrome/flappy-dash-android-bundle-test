@@ -114,6 +114,10 @@ jobs:
           - { target: armv7-linux-androideabi, name: armeabi-v7a }
           - { target: x86_64-linux-android, name: x86_64 }
           - { target: i686-linux-android, name: x86 }
+        exclude:
+          # Skia (Slint's renderer) does not compile for 32-bit x86 Android
+          - app: slint
+            abi: { target: i686-linux-android, name: x86 }
     runs-on: ubuntu-latest
     defaults: { run: { working-directory: 'ports/rust/${{ matrix.app }}' } }
     steps:
@@ -276,7 +280,7 @@ jobs:
         working-directory: ports/rust/dioxus
         run: |
           dx build --platform web --release
-          (cd ../target/dx/flappy_dioxus/release/web/public && zip -qr ../../../../../../../out/rust-dioxus-web.zip .)
+          (cd ../target/dx/flappy_dioxus/release/web/public && zip -qr "$GITHUB_WORKSPACE/out/rust-dioxus-web.zip" .)
       - uses: actions/upload-artifact@v4
         with: { name: rust-dioxus, path: out/ }
 
@@ -294,6 +298,8 @@ jobs:
         with: { workspaces: ports/rust/tauri, key: tauri }
       - run: bun install --frozen-lockfile
       - run: npm i -g @tauri-apps/cli@2.12.4
+      - name: Web build for the WebView (Expo export)
+        run: bun run export:web && rm -rf ports/rust/tauri/www && cp -r dist ports/rust/tauri/www
       - name: Android APKs (one per ABI)
         working-directory: ports/rust/tauri
         run: |

@@ -1,0 +1,26 @@
+{
+ "measured": "2026-11-14",
+ "machine": "cloud container, 4 vCPU x86_64, Xvfb virtual screen, software OpenGL/Vulkan (llvmpipe/lavapipe), no GPU",
+ "method": "bench/desktop-bench.sh: 30 s of the in-app benchmark; CPU from /proc; RSS = RAM held",
+ "note": "macroquad is not capped to the screen refresh here, so its CPU is not comparable; compare RAM and binary size.",
+ "results": [
+  {
+   "name": "Rust macroquad",
+   "cpuPct": 145.8,
+   "rssAvgMB": 117,
+   "binaryMB": 0.87
+  },
+  {
+   "name": "Rust Slint",
+   "cpuPct": 104.5,
+   "rssAvgMB": 150,
+   "binaryMB": 11.17
+  },
+  {
+   "name": "Rust Bevy",
+   "cpuPct": 328.9,
+   "rssAvgMB": 214,
+   "binaryMB": 39.43
+  }
+ ]
+}
