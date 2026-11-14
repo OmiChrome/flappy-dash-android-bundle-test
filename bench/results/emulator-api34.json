@@ -1,0 +1,124 @@
+{
+ "measured": "2026-11-14",
+ "run": "https://github.com/OmiChrome/flappy-dash-android-bundle-test/actions/runs/43585156949",
+ "device": "Android emulator, API 34 (Android 14), google_apis x86_64, pixel_6 profile, 4 GB RAM, KVM, SwiftShader software GPU, 30 Hz",
+ "note": "Software GPU: absolute fps is low for every app; compare apps with each other. Rust UI ports (slint, bevy, dioxus, uniffi, crux) draw the simplified draw list (circles + rectangles); the others draw the full art (paths, gradients).",
+ "results": [
+  {
+   "name": "rust-slint",
+   "apkMB": 6.13,
+   "coldStartMs": 669,
+   "pssAvgMB": 41,
+   "cpuPct": 51.9,
+   "avgFps": 19.8,
+   "low1Fps": 13,
+   "droppedPct": 35.6
+  },
+  {
+   "name": "rust-crux",
+   "apkMB": 1.53,
+   "coldStartMs": 979,
+   "pssAvgMB": 28,
+   "cpuPct": 53.7,
+   "avgFps": 18.8,
+   "low1Fps": 9,
+   "droppedPct": 27.9
+  },
+  {
+   "name": "rust-uniffi",
+   "apkMB": 1.44,
+   "coldStartMs": 1257,
+   "pssAvgMB": 28,
+   "cpuPct": 55.5,
+   "avgFps": 18.6,
+   "low1Fps": 8,
+   "droppedPct": 30.5
+  },
+  {
+   "name": "rust-dioxus",
+   "apkMB": 5.2,
+   "coldStartMs": 1204,
+   "pssAvgMB": 72,
+   "cpuPct": 86.4,
+   "avgFps": 16.9,
+   "low1Fps": 9,
+   "droppedPct": 47.7
+  },
+  {
+   "name": "java-views",
+   "apkMB": 0.07,
+   "coldStartMs": 1489,
+   "pssAvgMB": 22,
+   "cpuPct": 65.3,
+   "avgFps": 11.2,
+   "low1Fps": 5,
+   "droppedPct": 59.5
+  },
+  {
+   "name": "kotlin-compose",
+   "apkMB": 0.83,
+   "coldStartMs": 2040,
+   "pssAvgMB": 28,
+   "cpuPct": 56.2,
+   "avgFps": 9.9,
+   "low1Fps": 4,
+   "droppedPct": 64.5
+  },
+  {
+   "name": "flutter",
+   "apkMB": 16.06,
+   "coldStartMs": 3786,
+   "pssAvgMB": 60,
+   "cpuPct": 58.1,
+   "avgFps": 9.0,
+   "low1Fps": 5,
+   "droppedPct": 70.4
+  },
+  {
+   "name": "expo",
+   "apkMB": 45.0,
+   "coldStartMs": 4251,
+   "pssAvgMB": 125,
+   "cpuPct": 44.7,
+   "avgFps": 5.9,
+   "low1Fps": 3,
+   "droppedPct": 79.3
+  },
+  {
+   "name": "capacitor",
+   "apkMB": 5.24,
+   "coldStartMs": 1315,
+   "pssAvgMB": 79,
+   "cpuPct": 90.8,
+   "avgFps": null,
+   "low1Fps": null,
+   "droppedPct": null
+  },
+  {
+   "name": "rust-bevy",
+   "apkMB": 12.58,
+   "coldStartMs": 1188,
+   "pssAvgMB": 98,
+   "cpuPct": 76.5,
+   "avgFps": null,
+   "low1Fps": null,
+   "droppedPct": null
+  },
+  {
+   "name": "rust-macroquad",
+   "apkMB": 0.46,
+   "coldStartMs": null,
+   "pssAvgMB": null,
+   "cpuPct": null,
+   "avgFps": null,
+   "low1Fps": null,
+   "droppedPct": null
+  }
+ ],
+ "issues": {
+  "rust-macroquad": "exits right after launch on the x86_64 emulator image (crash before first frame)",
+  "capacitor": "benchmark could not be started by automation (WebView buttons not in the accessibility tree); smoke/RAM/CPU/cold start measured",
+  "rust-bevy": "no benchmark result logged within 100 s; smoke/RAM/CPU/cold start measured",
+  "rust-tauri": "APK added after this run"
+ }
+}
