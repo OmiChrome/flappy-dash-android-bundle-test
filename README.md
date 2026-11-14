@@ -21,3 +21,10 @@ Expo (SDK 58) + Bun. Pure-SVG art, tap/click/Space to flap. Android-first, also 
 | `bun run submit:android` | upload latest AAB to Play Store |
 
 Change `com.flappydash.game` in app.json (ios.bundleIdentifier / android.package) to your own id before store release.
+
+## Automated release (GitHub Actions)
+Add repo secret `EXPO_TOKEN`, then:
+```bash
+git tag v1.0.1 && git push origin v1.0.1
+```
+`.github/workflows/release.yml` checks, builds the APK on EAS, deploys web, and publishes the GitHub release with the APK attached. It can also be run manually from the Actions tab.

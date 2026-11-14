@@ -1,0 +1,78 @@
+name: Release
+
+# Push a tag like v1.0.1 (or run manually) to: check -> build APK on EAS -> deploy web -> publish GitHub release.
+# Needs one repo secret: EXPO_TOKEN (expo.dev -> Account -> Access Tokens).
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to create (e.g. v1.0.1)'
+        required: true
+
+permissions:
+  contents: write
+
+env:
+  EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+  EXPO_NO_TELEMETRY: '1'
+  TAG: ${{ github.event.inputs.tag || github.ref_name }}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bun run typecheck
+      - run: bun test
+      - run: bunx expo-doctor
+
+  android:
+    needs: check
+    runs-on: ubuntu-latest
+    outputs:
+      apk_url: ${{ steps.build.outputs.apk_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - name: Build APK on EAS
+        id: build
+        run: |
+          test -n "$EXPO_TOKEN" || { echo "::error::Add the EXPO_TOKEN repo secret"; exit 1; }
+          bunx eas-cli build --platform android --profile preview --non-interactive --wait --json > build.json
+          cat build.json
+          url=$(jq -r '.[0].artifacts.buildUrl // .[0].artifacts.applicationArchiveUrl' build.json)
+          test -n "$url" && [ "$url" != "null" ] || { echo "::error::EAS build produced no APK"; exit 1; }
+          echo "apk_url=$url" >> "$GITHUB_OUTPUT"
+
+  web:
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: test -n "$EXPO_TOKEN" || { echo "::error::Add the EXPO_TOKEN repo secret"; exit 1; }
+      - run: bunx expo export -p web
+      - run: bunx eas-cli deploy --prod --non-interactive
+
+  release:
+    needs: [android, web]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download APK
+        run: curl -fsSL -o "flappy-dash-${TAG#v}.apk" "${{ needs.android.outputs.apk_url }}"
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$TAG" "flappy-dash-${TAG#v}.apk" \
+            --target "${{ github.sha }}" \
+            --title "Flappy Dash ${TAG#v}" \
+            --generate-notes \
+            --notes "Android: install the attached APK. Web: https://flappy-dash.expo.app"
