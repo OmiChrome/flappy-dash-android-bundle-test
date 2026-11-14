@@ -1,7 +1,9 @@
 # One workspace for every Rust port: they share the game engine (core) and one build cache.
 [workspace]
 resolver = "2"
-members = ["core", "macroquad", "slint", "bevy", "dioxus"]
+members = ["core", "macroquad", "slint", "bevy", "dioxus", "uniffi", "crux"]
+# Tauri pins a different webkit2gtk than Dioxus, so it keeps its own lockfile
+exclude = ["tauri"]
 
 [profile.release]
 opt-level = 3

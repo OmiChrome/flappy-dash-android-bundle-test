@@ -1,0 +1,21 @@
+[package]
+name = "flappy_crux"
+version = "1.0.0"
+edition = "2021"
+
+[lib]
+crate-type = ["lib", "cdylib"]
+
+[dependencies]
+flappy_core = { path = "../core" }
+crux_core = "0.20.0"
+serde = { version = "1", features = ["derive"] }
+uniffi = "0.32.2"
+
+[features]
+cli = ["uniffi/cli"]
+
+[[bin]]
+name = "uniffi-bindgen"
+path = "src/bin/uniffi-bindgen.rs"
+required-features = ["cli"]

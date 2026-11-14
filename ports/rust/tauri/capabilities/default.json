@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "No native permissions needed: the game is pure web content",
+  "windows": ["main"],
+  "permissions": ["core:default"]
+}
