@@ -1,0 +1,11 @@
+# build outputs of every port
+build/
+target/
+.gradle/
+.kotlin/
+local.properties
+.dart_tool/
+.cxx/
+*.iml
+.idea/
+/rust-macroquad/web/flappy_dash.wasm
