@@ -24,3 +24,11 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 }
+
+// The game's sounds (assets/sfx in the repo root) become res/raw/*.wav, so every port plays the same files.
+val copySfx = tasks.register<Copy>("copySfx") {
+    from(rootProject.file("../../assets/sfx")) { include("*.wav"); exclude("click.wav", "best.wav") }
+    into(layout.buildDirectory.dir("generated/sfx/raw"))
+}
+android.sourceSets.getByName("main").res.srcDir(layout.buildDirectory.dir("generated/sfx"))
+tasks.named("preBuild") { dependsOn(copySfx) }

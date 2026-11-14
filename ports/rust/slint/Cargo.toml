@@ -8,6 +8,7 @@ crate-type = ["lib", "cdylib"]
 
 [dependencies]
 flappy_core = { path = "../core" }
+flappy_sfx = { path = "../sfx" }
 slint = { version = "1.18.1", default-features = false, features = ["std", "compat-1-2", "renderer-femtovg"] }
 
 [target.'cfg(not(target_os = "android"))'.dependencies]
@@ -21,6 +22,9 @@ package = "com.flappydash.slint"
 apk_name = "flappy_slint"
 build_targets = ["aarch64-linux-android"]
 resources = "../macroquad/android_res"
+
+[[package.metadata.android.uses_permission]]
+name = "android.permission.VIBRATE"
 
 [package.metadata.android.sdk]
 min_sdk_version = 26

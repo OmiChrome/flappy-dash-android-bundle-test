@@ -1580,6 +1580,11 @@ data class ViewModel (
     var `result`: List<kotlin.String>?
     , 
     var `best`: kotlin.UInt
+    , 
+    /**
+     * sound/vibration events of this frame (flappy_core::EV_* bits); 0 during the benchmark
+     */
+    var `events`: kotlin.UByte
     
 ){
     
@@ -1603,6 +1608,7 @@ public object FfiConverterTypeViewModel: FfiConverterRustBuffer<ViewModel> {
             FfiConverterInt.read(buf),
             FfiConverterOptionalSequenceString.read(buf),
             FfiConverterUInt.read(buf),
+            FfiConverterUByte.read(buf),
         )
     }
 
@@ -1613,7 +1619,8 @@ public object FfiConverterTypeViewModel: FfiConverterRustBuffer<ViewModel> {
             FfiConverterBoolean.allocationSize(value.`benchOn`) +
             FfiConverterInt.allocationSize(value.`benchLeft`) +
             FfiConverterOptionalSequenceString.allocationSize(value.`result`) +
-            FfiConverterUInt.allocationSize(value.`best`)
+            FfiConverterUInt.allocationSize(value.`best`) +
+            FfiConverterUByte.allocationSize(value.`events`)
     )
 
     override fun write(value: ViewModel, buf: ByteBuffer) {
@@ -1624,6 +1631,7 @@ public object FfiConverterTypeViewModel: FfiConverterRustBuffer<ViewModel> {
             FfiConverterInt.write(value.`benchLeft`, buf)
             FfiConverterOptionalSequenceString.write(value.`result`, buf)
             FfiConverterUInt.write(value.`best`, buf)
+            FfiConverterUByte.write(value.`events`, buf)
     }
 }
 

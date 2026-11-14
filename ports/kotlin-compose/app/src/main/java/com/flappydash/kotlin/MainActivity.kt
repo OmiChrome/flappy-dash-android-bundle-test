@@ -24,6 +24,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -75,6 +76,10 @@ fun GameScreen(prefs: android.content.SharedPreferences) {
     var benchLeft by remember { mutableIntStateOf(0) }
     var benchResult by remember { mutableStateOf<BenchStats?>(null) }
     val times = remember { ArrayList<Double>(10000) }
+    val ctx = androidx.compose.ui.platform.LocalContext.current
+    val sfx = remember { Sfx(ctx) }
+    val watch = remember { Sfx.Watch() }
+    DisposableEffect(Unit) { onDispose { sfx.release() } }
 
     LaunchedEffect(Unit) {
         var last = 0L
@@ -84,6 +89,8 @@ fun GameScreen(prefs: android.content.SharedPreferences) {
                 val dtMs = if (last == 0L) 0.0 else (now - last) / 1e6
                 last = now
                 game.advance((dtMs / 1000).toFloat())
+                val ev = watch.diff(game.flapAt, game.score, game.stars, game.phase == DEAD, game.landed, game.theme)
+                if (!game.bot) sfx.events(ev)
                 if (benchOn && dtMs > 0) {
                     times.add(dtMs); benchMs += dtMs
                     benchLeft = 60 - (benchMs / 1000).toInt()

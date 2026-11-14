@@ -54,6 +54,10 @@ fun GameScreen() {
     var frame by remember { mutableStateOf<ViewModel?>(null) }
     var size by remember { mutableStateOf(androidx.compose.ui.unit.IntSize(1, 1)) }
 
+    val ctx = androidx.compose.ui.platform.LocalContext.current
+    val sfx = remember { Sfx(ctx) }
+    androidx.compose.runtime.DisposableEffect(Unit) { onDispose { sfx.release() } }
+
     LaunchedEffect(Unit) {
         var last = 0L
         while (true) {
@@ -61,7 +65,7 @@ fun GameScreen() {
                 val dt = if (last == 0L) 0.0 else (now - last) / 1e6
                 last = now
                 val k = size.height / 640f
-                engine.frame(dt, size.width / k)?.let { frame = it }
+                engine.frame(dt, size.width / k)?.let { frame = it; sfx.events(it.events.toInt()) }
             }
         }
     }

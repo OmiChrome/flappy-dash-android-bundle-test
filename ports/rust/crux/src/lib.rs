@@ -31,12 +31,13 @@ pub struct Model {
     times: Vec<f64>,
     result: Option<Vec<String>>,
     best: u32,
+    events: u8,
 }
 
 impl Default for Model {
     fn default() -> Self {
         let seed = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_millis() as i32).unwrap_or(1);
-        Model { game: Game::new(360.0, seed), prims: Vec::with_capacity(900), bench_on: false, bench_ms: 0.0, times: Vec::with_capacity(10000), result: None, best: 0 }
+        Model { game: Game::new(360.0, seed), prims: Vec::with_capacity(900), bench_on: false, bench_ms: 0.0, times: Vec::with_capacity(10000), result: None, best: 0, events: 0 }
     }
 }
 
@@ -44,7 +45,9 @@ impl Default for Model {
 pub struct Shape { pub round: bool, pub x: f32, pub y: f32, pub w: f32, pub h: f32, pub color: u32, pub alpha: f32 }
 
 #[derive(uniffi::Record, Clone)]
-pub struct ViewModel { pub shapes: Vec<Shape>, pub phase: u8, pub score: u32, pub bench_on: bool, pub bench_left: i32, pub result: Option<Vec<String>>, pub best: u32 }
+pub struct ViewModel { pub shapes: Vec<Shape>, pub phase: u8, pub score: u32, pub bench_on: bool, pub bench_left: i32, pub result: Option<Vec<String>>, pub best: u32,
+    /// sound/vibration events of this frame (flappy_core::EV_* bits); 0 during the benchmark
+    pub events: u8 }
 
 #[derive(Default)]
 pub struct Flappy;
@@ -90,6 +93,8 @@ impl App for Flappy {
                     }
                 }
                 if before != Phase::Dead && m.game.phase == Phase::Dead && !m.game.bot && m.game.score > m.best { m.best = m.game.score; }
+                let ev = m.game.take_events();
+                m.events = if m.bench_on || m.game.bot { 0 } else { ev };
                 let Model { game, prims, .. } = m;
                 draw_list(game, world_w, prims);
             }
@@ -105,7 +110,7 @@ impl App for Flappy {
             bench_on: m.bench_on,
             bench_left: 60 - (m.bench_ms / 1000.0) as i32,
             result: m.result.clone(),
-            best: m.best,
+            best: m.best, events: m.events,
         }
     }
 }

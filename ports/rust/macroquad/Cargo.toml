@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 macroquad = "0.4.16"
 flappy_core = { path = "../core" }
+flappy_sfx = { path = "../sfx" }
 
 [package.metadata.android]
 package_name = "com.flappydash.rust"
@@ -13,9 +14,14 @@ label = "Flappy Dash (Rust)"
 version_code = 1
 version_name = "1.0.0"
 build_targets = ["aarch64-linux-android"]
+# 26 = Android 8: the first version with AAudio, which the sound output (cpal) uses
+min_sdk_version = 26
 res = "android_res"
 icon = "@mipmap/ic_launcher"
 fullscreen = true
+
+[[package.metadata.android.permission]]
+name = "android.permission.VIBRATE"
 
 [package.metadata.android.activity_attributes]
 "android:exported" = "true"

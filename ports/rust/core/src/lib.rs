@@ -27,6 +27,14 @@ pub const THEMES: usize = 4;
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum Phase { Ready, Playing, Dead }
 
+// Events for sounds and vibration (same bits as src/game/engine.ts). Read them with take_events().
+pub const EV_FLAP: u8 = 1;
+pub const EV_SCORE: u8 = 2;
+pub const EV_STAR: u8 = 4;
+pub const EV_HIT: u8 = 8;
+pub const EV_LAND: u8 = 16;
+pub const EV_THEME: u8 = 32;
+
 pub const P_FLUFF: u8 = 0;
 pub const P_SPARK: u8 = 1;
 pub const P_FEATHER: u8 = 2;
@@ -41,7 +49,7 @@ pub struct Game {
     pub phase: Phase, pub width: f32, pub bird_x: f32, pub y: f32, pub vy: f32, pub rot: f32, pub time: f32, pub scroll: f32,
     speed: f32, pub score: u32, pub stars: u32, dead_for: f32, pub flap_at: f32, pub squash: f32, pub shake: f32, pub flash: f32,
     landed: bool, spawn_in: f32, last_gap: f32, spawned: u32, pub pillars: [Pillar; PILLARS], pub parts: [Particle; PARTICLES],
-    p_next: usize, pub theme: usize, pub theme_from: usize, pub theme_mix: f32, acc: f32, pub seed: i32, pub bot: bool,
+    p_next: usize, pub theme: usize, pub theme_from: usize, pub theme_mix: f32, acc: f32, pub seed: i32, pub bot: bool, ev: u8,
 }
 
 impl Game {
@@ -51,7 +59,7 @@ impl Game {
             speed: BASE_SPEED, score: 0, stars: 0, dead_for: 0.0, flap_at: -10.0, squash: 0.0, shake: 0.0, flash: 0.0,
             landed: false, spawn_in: 0.0, last_gap: -1.0, spawned: 0, pillars: [Pillar { gap: BASE_GAP, ..Default::default() }; PILLARS],
             parts: [Particle { max: 1.0, size: 1.0, ..Default::default() }; PARTICLES], p_next: 0, theme: 0, theme_from: 0,
-            theme_mix: 1.0, acc: 0.0, seed, bot: false,
+            theme_mix: 1.0, acc: 0.0, seed, bot: false, ev: 0,
         }
     }
 
@@ -70,6 +78,9 @@ impl Game {
         self.theme_from = self.theme; self.theme = 0; self.theme_mix = if self.theme_from == 0 { 1.0 } else { 0.0 };
         for p in self.pillars.iter_mut() { p.on = false; }
     }
+
+    /// Events since the last call (EV_* bits), then clears them.
+    pub fn take_events(&mut self) -> u8 { std::mem::take(&mut self.ev) }
 
     pub fn set_width(&mut self, w: f32) { self.width = w; self.bird_x = w * 0.3; }
 
@@ -94,7 +105,7 @@ impl Game {
     pub fn flap(&mut self) -> bool {
         if self.phase == Phase::Dead { return false; }
         if self.phase == Phase::Ready { self.phase = Phase::Playing; self.spawn_in = self.width * 0.55 + 60.0; }
-        self.vy = FLAP_V; self.flap_at = self.time; self.squash = 1.0;
+        self.vy = FLAP_V; self.flap_at = self.time; self.squash = 1.0; self.ev |= EV_FLAP;
         for _ in 0..3 {
             let vx = -40.0 - self.rand() * 50.0;
             let vy = 30.0 + self.rand() * 60.0;
@@ -150,7 +161,7 @@ impl Game {
     }
 
     fn die(&mut self) {
-        self.phase = Phase::Dead; self.dead_for = 0.0; self.shake = 1.0; self.flash = 1.0; self.vy = self.vy.min(-180.0);
+        self.ev |= EV_HIT; self.phase = Phase::Dead; self.dead_for = 0.0; self.shake = 1.0; self.flash = 1.0; self.vy = self.vy.min(-180.0);
         let (x, y) = (self.bird_x, self.y);
         self.puff(14, P_FEATHER, x, y, 260.0);
         self.puff(8, P_FLUFF, x, y, 160.0);
@@ -161,7 +172,7 @@ impl Game {
         self.score += n;
         self.speed = BASE_SPEED + (MAX_SPEED - BASE_SPEED) * Self::difficulty(self.score);
         let after = self.score / 10;
-        if after != before { self.theme_from = self.theme; self.theme = after as usize % THEMES; self.theme_mix = 0.0; }
+        if after != before { self.ev |= EV_THEME; self.theme_from = self.theme; self.theme = after as usize % THEMES; self.theme_mix = 0.0; }
     }
 
     fn autopilot(&mut self) {
@@ -201,7 +212,7 @@ impl Game {
                     self.vy = (self.vy + GRAVITY * dt).min(MAX_FALL);
                     self.y = (self.y + self.vy * dt).min(floor);
                     self.rot = (self.rot + 420.0 * dt).min(100.0);
-                    if self.y >= floor && !self.landed { self.landed = true; let x = self.bird_x; self.puff(8, P_FLUFF, x, floor + BIRD_R, 120.0); }
+                    if self.y >= floor && !self.landed { self.landed = true; self.ev |= EV_LAND; let x = self.bird_x; self.puff(8, P_FLUFF, x, floor + BIRD_R, 120.0); }
                 }
                 return;
             }
@@ -230,11 +241,11 @@ impl Game {
                 let sy = p.gap_y + p.star_dy;
                 let (ddx, ddy) = (self.bird_x - p.x, self.y - sy);
                 if ddx * ddx + ddy * ddy < (BIRD_R + 12.0) * (BIRD_R + 12.0) {
-                    self.pillars[i].star = 2; self.stars += 1; self.add_score(1); self.puff(10, P_SPARK, p.x, sy, 170.0);
+                    self.pillars[i].star = 2; self.stars += 1; self.ev |= EV_STAR; self.add_score(1); self.puff(10, P_SPARK, p.x, sy, 170.0);
                 }
             }
             if !p.passed && p.x + PILLAR_W / 2.0 < self.bird_x - BIRD_R {
-                self.pillars[i].passed = true; self.add_score(1);
+                self.pillars[i].passed = true; self.add_score(1); self.ev |= EV_SCORE;
                 let (x, y) = (self.bird_x + 6.0, self.y - 18.0);
                 self.puff(5, P_SPARK, x, y, 90.0);
             }
