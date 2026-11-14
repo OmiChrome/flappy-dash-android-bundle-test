@@ -1,14 +1,22 @@
 {
-  "name": "flappy",
+  "name": "flappy-dash",
   "version": "1.0.0",
   "main": "index.ts",
   "dependencies": {
+    "@expo/metro-runtime": "~58.0.17",
+    "@react-native-async-storage/async-storage": "2.2.0",
     "expo": "~58.0.25",
+    "expo-haptics": "~58.0.8",
+    "expo-splash-screen": "~58.0.14",
     "expo-status-bar": "~58.0.5",
     "react": "19.3.0",
-    "react-native": "0.88.1"
+    "react-dom": "19.3.0",
+    "react-native": "0.88.1",
+    "react-native-svg": "15.16.0",
+    "react-native-web": "^0.21.4"
   },
   "devDependencies": {
+    "@types/bun": "^1.4.4",
     "@types/react": "~19.3.0",
     "typescript": "~6.0.3"
   },
@@ -16,7 +24,20 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit",
+    "doctor": "expo-doctor",
+    "check": "bun run typecheck && bun test && bun run export:all",
+    "export:web": "expo export -p web",
+    "export:android": "expo export -p android --output-dir dist-android",
+    "export:all": "expo export -p web && expo export -p android --output-dir dist-android",
+    "assets": "bun scripts/make-assets.ts",
+    "build:apk": "bunx eas-cli build -p android --profile preview",
+    "build:aab": "bunx eas-cli build -p android --profile production",
+    "build:ios": "bunx eas-cli build -p ios --profile production",
+    "deploy:web": "expo export -p web && bunx eas-cli deploy --prod",
+    "submit:android": "bunx eas-cli submit -p android --latest"
   },
   "private": true
 }
