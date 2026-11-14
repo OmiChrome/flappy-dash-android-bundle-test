@@ -37,11 +37,8 @@ jobs:
           profile: pixel_6
           ram-size: 4096M
           emulator-options: -no-window -gpu swiftshader_indirect -no-boot-anim -camera-back none
-          script: |
-            # name | apk | package | text to tap first (empty = tap the game itself)
-            while IFS='|' read -r n a p s <&3; do
-              [ -f "apks/$a" ] && bash bench/audio-probe.sh "$n" "apks/$a" "$p" probe-out "$s" < /dev/null || echo "[$n] skipped"
-            done 3< bench/audio-plan.txt
+          # the emulator action runs each script line on its own, so the loop lives in a file
+          script: bash bench/audio-probe-all.sh bench/audio-plan.txt apks probe-out
       - name: Summary
         if: always()
         run: |
