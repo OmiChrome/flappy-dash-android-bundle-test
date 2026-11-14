@@ -49,9 +49,9 @@ Every port runs the same game engine (`ports/rust/core`, a shared Rust library),
 - The emulator has no real GPU, so all fps numbers are low. Compare rows with each other.
 - All rows above draw the **same simplified picture** (circles and rectangles from the shared draw list), so this table is a fair fight.
 - ² Bevy started fine (smoke test ✅) but didn't log its benchmark result within 100 s.
+- ³ macroquad closes right after launch on the x86_64 emulator image. It runs fine on desktop and web; arm64 phones are untested.
 - ⁴ Tauri shows a web page (the Expo web build), whose benchmark button the test robot can't press, same as Capacitor. Its start, RAM and CPU were measured. It is the heaviest Rust option on RAM and CPU because it runs a whole web engine.
 - Two emulator runs gave the same ranking (run-to-run variation is about ±15 %).
-- ³ macroquad closes right after launch on the x86_64 emulator image. It runs fine on desktop and web; arm64 phones are untested.
 
 ## Desktop (Linux, no GPU, virtual screen) {#desktop}
 
