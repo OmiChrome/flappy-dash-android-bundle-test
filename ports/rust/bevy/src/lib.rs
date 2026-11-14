@@ -1,5 +1,7 @@
 //! Flappy Dash - Bevy port. Draws the shared draw list (flappy_core::draw) with a pool of
-//! sprite entities (one white square and one white circle texture, tinted per shape).
+//! sprite entities. Circles and rectangles come from ONE texture (left half: circle, right half:
+//! solid white), so Bevy draws the whole scene in a single batch instead of one draw call each time
+//! the shape type changes. Unused slots are hidden, and sprites are only written when they change.
 use bevy::asset::RenderAssetUsages;
 use bevy::prelude::*;
 use bevy::render::render_resource::{Extent3d, TextureDimension, TextureFormat};
@@ -19,37 +21,39 @@ struct State {
     best: u32,
 }
 
-#[derive(Resource)]
-struct Tex { circle: Handle<Image> }
-
 #[derive(Component)]
 struct Slot(usize);
 #[derive(Component)]
 struct Hud;
 
-fn circle_image() -> Image {
-    let n = 128u32;
-    let mut data = vec![0u8; (n * n * 4) as usize];
+const N: u32 = 128;
+const CIRCLE: Rect = Rect { min: Vec2::new(0.0, 0.0), max: Vec2::new(N as f32, N as f32) };
+// inset so texture filtering never samples the circle's transparent edge
+const SQUARE: Rect = Rect { min: Vec2::new(N as f32 + 8.0, 8.0), max: Vec2::new(2.0 * N as f32 - 8.0, N as f32 - 8.0) };
+
+fn atlas_image() -> Image {
+    let (n, w) = (N, 2 * N);
+    let mut data = vec![0u8; (w * n * 4) as usize];
     for y in 0..n {
-        for x in 0..n {
-            let (dx, dy) = (x as f32 + 0.5 - n as f32 / 2.0, y as f32 + 0.5 - n as f32 / 2.0);
-            let d = (dx * dx + dy * dy).sqrt();
-            let a = (n as f32 / 2.0 - d + 0.5).clamp(0.0, 1.0); // 1px soft edge = anti-aliased
-            let i = ((y * n + x) * 4) as usize;
+        for x in 0..w {
+            let a = if x >= n { 1.0 } else {
+                let (dx, dy) = (x as f32 + 0.5 - n as f32 / 2.0, y as f32 + 0.5 - n as f32 / 2.0);
+                (n as f32 / 2.0 - (dx * dx + dy * dy).sqrt() + 0.5).clamp(0.0, 1.0) // 1px soft edge = anti-aliased
+            };
+            let i = ((y * w + x) * 4) as usize;
             data[i..i + 4].copy_from_slice(&[255, 255, 255, (a * 255.0) as u8]);
         }
     }
-    Image::new(Extent3d { width: n, height: n, depth_or_array_layers: 1 }, TextureDimension::D2, data, TextureFormat::Rgba8UnormSrgb, RenderAssetUsages::RENDER_WORLD)
+    Image::new(Extent3d { width: w, height: n, depth_or_array_layers: 1 }, TextureDimension::D2, data, TextureFormat::Rgba8UnormSrgb, RenderAssetUsages::RENDER_WORLD)
 }
 
 fn setup(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
     commands.spawn(Camera2d);
-    let circle = images.add(circle_image());
+    let atlas = images.add(atlas_image());
     for i in 0..SLOTS {
-        commands.spawn((Sprite { color: Color::NONE, custom_size: Some(Vec2::ZERO), ..default() }, Transform::from_xyz(0.0, 0.0, i as f32 * 0.001), Slot(i)));
+        commands.spawn((Sprite { image: atlas.clone(), rect: Some(SQUARE), color: Color::NONE, custom_size: Some(Vec2::ZERO), ..default() }, Transform::from_xyz(0.0, 0.0, i as f32 * 0.001), Visibility::Hidden, Slot(i)));
     }
     commands.spawn((Text2d::new(""), TextFont { font_size: bevy::text::FontSize::Px(20.0), ..default() }, TextColor(Color::WHITE), Transform::from_xyz(0.0, 0.0, 10.0), Hud));
-    commands.insert_resource(Tex { circle });
     let seed = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_millis() as i32).unwrap_or(1);
     commands.insert_resource(State { game: Game::new(360.0, seed), prims: Vec::with_capacity(SLOTS), bench_on: false, bench_ms: 0.0, times: Vec::with_capacity(10000), result: None, best: 0 });
 }
@@ -59,9 +63,8 @@ fn frame(
     windows: Query<&Window>,
     mouse: Res<ButtonInput<MouseButton>>,
     touches: Res<Touches>,
-    tex: Res<Tex>,
     mut st: ResMut<State>,
-    mut sprites: Query<(&Slot, &mut Sprite, &mut Transform)>,
+    mut sprites: Query<(&Slot, &mut Sprite, &mut Transform, &mut Visibility)>,
     mut hud: Query<(&mut Text2d, &mut Transform), (With<Hud>, Without<Slot>)>,
 ) {
     let Ok(win) = windows.single() else { return };
@@ -107,19 +110,24 @@ fn frame(
         let (bw, bh) = (260.0 / k, 56.0 / k);
         prims.push(Prim { kind: 1, x: w / 2.0 - bw / 2.0, y: WORLD_H * 0.79, w: bw, h: bh, color: 0x55BF98, alpha: 1.0 });
     }
-    for (slot, mut sprite, mut tf) in sprites.iter_mut() {
+    for (slot, mut sprite, mut tf, mut vis) in sprites.iter_mut() {
         match prims.get(slot.0) {
             Some(p) => {
+                vis.set_if_neq(Visibility::Inherited);
                 let c = p.color;
-                sprite.color = Color::srgba_u8((c >> 16) as u8, (c >> 8) as u8, c as u8, (p.alpha.clamp(0.0, 1.0) * 255.0) as u8);
-                sprite.custom_size = Some(Vec2::new(p.w * k, p.h * k));
+                let color = Color::srgba_u8((c >> 16) as u8, (c >> 8) as u8, c as u8, (p.alpha.clamp(0.0, 1.0) * 255.0) as u8);
+                let size = Some(Vec2::new(p.w * k, p.h * k));
+                let rect = Some(if p.kind == 0 { CIRCLE } else { SQUARE });
+                // write only what changed, so Bevy's change detection skips untouched sprites
+                if sprite.color != color || sprite.custom_size != size || sprite.rect != rect {
+                    let s = sprite.as_mut();
+                    s.color = color; s.custom_size = size; s.rect = rect;
+                }
                 let (cx, cy) = if p.kind == 0 { (p.x, p.y) } else { (p.x + p.w / 2.0, p.y + p.h / 2.0) };
-                tf.translation.x = cx * k - sw / 2.0;
-                tf.translation.y = sh / 2.0 - cy * k;
-                let want = if p.kind == 0 { tex.circle.clone() } else { Handle::default() };
-                if sprite.image != want { sprite.image = want; }
+                let pos = Vec3::new(cx * k - sw / 2.0, sh / 2.0 - cy * k, tf.translation.z);
+                if tf.translation != pos { tf.translation = pos; }
             }
-            None => { sprite.custom_size = Some(Vec2::ZERO); }
+            None => { vis.set_if_neq(Visibility::Hidden); }
         }
     }
     if let Ok((mut text, mut tf)) = hud.single_mut() {

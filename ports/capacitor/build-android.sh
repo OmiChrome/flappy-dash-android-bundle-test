@@ -6,6 +6,8 @@ cd "$(dirname "$0")"
 rm -rf www && cp -r ../../dist www
 test -d android || npx cap add android
 npx cap sync android
+# the web game calls navigator.vibrate(); the WebView only allows it with this permission
+grep -q android.permission.VIBRATE android/app/src/main/AndroidManifest.xml || sed -i '0,/<application/s//<uses-permission android:name="android.permission.VIBRATE" \/>\n    <application/' android/app/src/main/AndroidManifest.xml
 # release build: R8 on, signed with the debug key so it installs directly
 sed -i 's/minifyEnabled false/minifyEnabled true/' android/app/build.gradle
 grep -q 'signingConfig signingConfigs.debug' android/app/build.gradle || \
