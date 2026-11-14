@@ -29,4 +29,8 @@ pid=$(adb shell pidof "$pkg" | tr -d '\r')
   adb logcat -d | grep -iE "ReactNativeJS|ExoPlayer|Media3|AudioTrack|MediaPlayer|SoundPool|expo.*audio|AndroidRuntime|AudioFocus" | grep -vE "chatty" | tail -40
 } > "$log" 2>&1
 cat "$log"
+# one line per app for the summary: did it open an audio stream, did it vibrate?
+players=$(adb shell dumpsys audio | grep -cE "new player .*pid:[0-9]+/$pid |uid/pid:[0-9]+/$pid " || true)
+vibes=$(adb shell dumpsys vibrator_manager | grep -c "opPkg=$pkg" || true)
+echo "| $name | $([ "${players:-0}" -gt 0 ] && echo "✅ $players" || echo ❌) | $([ "${vibes:-0}" -gt 0 ] && echo "✅ $vibes" || echo ❌) |" >> "$out/summary.md"
 adb uninstall "$pkg" >/dev/null 2>&1

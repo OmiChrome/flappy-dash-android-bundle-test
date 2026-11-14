@@ -1,0 +1,12 @@
+expo|expo-android-x86_64.apk|com.flappydash.game|Play
+kotlin|kotlin-compose-android.apk|com.flappydash.kotlin|
+java|java-views-android.apk|com.flappydash.java|
+flutter|flutter-android-x86_64.apk|com.flappydash.flutter|
+capacitor|capacitor-android.apk|com.flappydash.capacitor|Play
+slint|rust-slint-android-x86_64.apk|com.flappydash.slint|
+bevy|rust-bevy-android-x86_64.apk|com.flappydash.bevy|
+macroquad|rust-android-x86_64.apk|com.flappydash.rust|
+dioxus|rust-dioxus-android-x86_64.apk|com.flappydash.dioxus|
+tauri|rust-tauri-android-x86_64.apk|com.flappydash.tauri|Play
+uniffi|rust-uniffi-android-x86_64.apk|com.flappydash.uniffi|
+crux|rust-crux-android-x86_64.apk|com.flappydash.crux|
