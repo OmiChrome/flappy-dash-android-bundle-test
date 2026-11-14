@@ -1,0 +1,18 @@
+[package]
+name = "flappy_uniffi"
+version = "1.0.0"
+edition = "2021"
+
+[lib]
+crate-type = ["lib", "cdylib"]
+
+[dependencies]
+flappy_core = { path = "../core" }
+uniffi = { version = "0.32.2" }
+
+[features]
+cli = ["uniffi/cli"]
+
+[[bin]]
+name = "uniffi-bindgen"
+required-features = ["cli"]

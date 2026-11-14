@@ -1,0 +1,24 @@
+[package]
+name = "flappy_tauri"
+version = "1.0.0"
+edition = "2021"
+
+[lib]
+name = "flappy_tauri_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.5", features = [] }
+
+[dependencies]
+tauri = { version = "2.12.5", features = [] }
+
+# standalone (see ../Cargo.toml)
+[workspace]
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

@@ -23,7 +23,7 @@ build_targets = ["aarch64-linux-android"]
 resources = "../macroquad/android_res"
 
 [package.metadata.android.sdk]
-min_sdk_version = 24
+min_sdk_version = 26
 target_sdk_version = 35
 
 [package.metadata.android.application]

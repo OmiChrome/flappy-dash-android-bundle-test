@@ -11,3 +11,5 @@ local.properties
 rust/macroquad/web/flappy_dash.wasm
 rust/target/
 rust/debug.keystore
+uniffi-android/app/src/main/jniLibs/
+crux-android/app/src/main/jniLibs/
