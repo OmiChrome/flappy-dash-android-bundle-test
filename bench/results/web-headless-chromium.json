@@ -1,11 +1,48 @@
 {
-  "measured": "2026-11-14",
-  "machine": "cloud container, 4 vCPU x86_64, headless Chromium with software WebGL (SwiftShader), no GPU",
-  "method": "bench/web-bench.cjs: same 30 s seeded autopilot run per build; fps from requestAnimationFrame; CPU from CDP Performance metrics; RSS from /proc",
-  "note": "Absolute numbers are low because rendering is software-only; compare builds relative to each other.",
-  "results": [
-    { "name": "Expo (React Native Web + Skia/CanvasKit)", "loadMs": 4297, "fps": 12.8, "mainThreadBusyPct": 100.4, "scriptPct": 4.0, "jsHeapMB": 13.5, "rendererRssMB": 181, "gpuRssMB": 163 },
-    { "name": "Flutter web (CanvasKit)", "loadMs": 4023, "fps": 25.6, "mainThreadBusyPct": 100.1, "scriptPct": 98.4, "jsHeapMB": 19.5, "rendererRssMB": 205, "gpuRssMB": 131 },
-    { "name": "Rust macroquad (wasm + WebGL)", "loadMs": 3537, "fps": 52.8, "mainThreadBusyPct": 99.3, "scriptPct": 2.3, "jsHeapMB": 1.3, "rendererRssMB": 136, "gpuRssMB": 137 }
-  ]
+ "measured": "2026-11-14",
+ "machine": "cloud container, 4 vCPU x86_64, headless Chromium with software WebGL (SwiftShader), no GPU",
+ "method": "bench/web-bench.cjs: same 30 s seeded autopilot run per build; fps from requestAnimationFrame; CPU from CDP Performance metrics; RSS from /proc",
+ "note": "Absolute numbers are low because rendering is software-only; compare builds relative to each other. Builds that draw with WebGL (Expo/Skia CanvasKit, Flutter, macroquad) go through slow software GL here; Dioxus draws SVG, which Chrome rasterises on the CPU, so it is favoured in this setup.",
+ "results": [
+  {
+   "name": "Expo (React Native Web + Skia/CanvasKit)",
+   "loadMs": 4297,
+   "fps": 12.8,
+   "mainThreadBusyPct": 100.4,
+   "scriptPct": 4.0,
+   "jsHeapMB": 13.5,
+   "rendererRssMB": 181,
+   "gpuRssMB": 163
+  },
+  {
+   "name": "Flutter web (CanvasKit)",
+   "loadMs": 4023,
+   "fps": 25.6,
+   "mainThreadBusyPct": 100.1,
+   "scriptPct": 98.4,
+   "jsHeapMB": 19.5,
+   "rendererRssMB": 205,
+   "gpuRssMB": 131
+  },
+  {
+   "name": "Rust macroquad (wasm + WebGL)",
+   "loadMs": 3537,
+   "fps": 52.8,
+   "mainThreadBusyPct": 99.3,
+   "scriptPct": 2.3,
+   "jsHeapMB": 1.3,
+   "rendererRssMB": 136,
+   "gpuRssMB": 137
+  },
+  {
+   "name": "Dioxus (RSX -> SVG in the browser)",
+   "loadMs": 6275,
+   "fps": 60,
+   "mainThreadBusyPct": 12.8,
+   "scriptPct": 6.0,
+   "jsHeapMB": 2.2,
+   "rendererRssMB": 175,
+   "gpuRssMB": 106
+  }
+ ]
 }

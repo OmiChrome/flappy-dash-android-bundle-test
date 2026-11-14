@@ -1,16 +1,18 @@
+[🏠 Home](../README.md) · [📊 Benchmark](../docs/BENCHMARK.md) · [🦀 Rust benchmark](../docs/BENCHMARK-RUST.md) · [📱 Measure on your phone](../docs/MEASURING.md) · [⚙️ Cloud builds & tests](../docs/CI.md) · **📐 Port rules**
+
 # Flappy Dash: port spec
 
 Every port reimplements the **same game** so that size and performance numbers compare like with like. The reference implementation is `src/game/engine.ts`. Port it line by line.
 
 ## Must match exactly
 - **World:** 640 units tall. Width is `screenWidth / (screenHeight / 640)`. The floor is at `y = 548` (floor height 92).
-- **Physics:** fixed step `1/120 s` with an accumulator. The frame delta is clamped to `0.1 s`. Gravity 1650, flap velocity −455, max fall 720. The bird hitbox radius is 13 and `birdX = width * 0.3`.
+- **Physics:** fixed step of `1/120 s` with an accumulator (the game always moves in equal slices, so 60, 90 and 120 Hz screens play the same). The frame delta is clamped to `0.1 s`. Gravity 1650, flap velocity −455, max fall 720. The bird hitbox radius is 13 and `birdX = width * 0.3`.
 - **Pillars:** width 66; cap 80 × 26; spacing 228; pool of 6.
   - Speed is `150 + 55 * d` and gap is `184 - 34 * d`, where `d = min(1, score / 45)`.
   - Gap edge margin is 58 and the max centre shift between neighbours is 165.
   - From the 8th pillar on, a pillar moves with probability `0.2 + 0.4 d`, amplitude `22 + 26 d`, frequency `1.1 + rand * 0.8`, and a random phase.
   - A star appears from the 3rd pillar on with probability 0.34, offset `(rand - 0.5) * gap * 0.45`. A star is worth +1 point and +1 star.
-- **RNG:** mulberry32 seeded from `seed`, consumed in the same order as `engine.ts`. Particles also call `rand`, so emit them identically or the course diverges.
+- **RNG** (random number generator, so every port makes the same "random" pillars): mulberry32 seeded from `seed`, consumed in the same order as `engine.ts`. Particles also call `rand`, so emit them identically or the course diverges.
 - **Ceiling:** soft (clamp `y >= 13`). The floor and pillars kill.
 - **Themes:** 4 skies that switch every 10 points (Morning, Sunset, Twilight, Starry). Colours are in `src/game/look.ts`.
 - **Autopilot (benchmark):** seed **1234**, 60 s, bird invincible on pillars. The flap rule:
