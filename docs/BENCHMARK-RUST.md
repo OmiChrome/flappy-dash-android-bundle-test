@@ -29,10 +29,10 @@ Every port runs the same game engine (`ports/rust/core`, a shared Rust library),
 | Crux | 1.53 MB | Same as UniFFI, plus the Crux core |
 | Dioxus | 3.6 MB | Rust + WebView glue |
 | Slint | 6.0 MB | Includes Skia (its GPU drawing library) |
-| Tauri | 9.6 MB ¹ | Rust shell for all 4 CPU types + the Expo web build (about 4 MB compressed) |
+| Tauri | 9.7 MB ¹ | Rust shell + the Expo web build in the phone's WebView |
 | Bevy | 11.9 MB | Whole game engine + wgpu (GPU layer) |
 
-¹ The `v2.1.0` Tauri build was one APK for all CPU types; per-CPU APKs are in later runs.
+¹ Tauri: the size of the x86_64 APK (Rust shell + the Expo web build, about 4 MB compressed).
 
 ## Speed and memory (Android 14 emulator, software GPU)
 
@@ -44,12 +44,14 @@ Every port runs the same game engine (`ports/rust/core`, a shared Rust library),
 | Dioxus | 1.20 s | 72 MB | 86 % | 16.9 | 9 | 48 % |
 | Bevy | 1.19 s | 98 MB | 77 % | – ² | – | – |
 | macroquad | – | – | – | – ³ | – | – |
-| Tauri | (next run) | | | | | |
+| Tauri | 1.12 s | 91 MB | 94 % | – ⁴ | – | – |
 
 - The emulator has no real GPU, so all fps numbers are low. Compare rows with each other.
 - All rows above draw the **same simplified picture** (circles and rectangles from the shared draw list), so this table is a fair fight.
 - ² Bevy started fine (smoke test ✅) but didn't log its benchmark result within 100 s.
 - ³ macroquad closes right after launch on the x86_64 emulator image. It runs fine on desktop and web; arm64 phones are untested.
+- ⁴ Tauri shows a web page (the Expo web build), whose benchmark button the test robot can't press, same as Capacitor. Its start, RAM and CPU were measured. It is the heaviest Rust option on RAM and CPU because it runs a whole web engine.
+- Two emulator runs gave the same ranking (run-to-run variation is about ±15 %).
 
 ## Desktop (Linux, no GPU, virtual screen) {#desktop}
 
