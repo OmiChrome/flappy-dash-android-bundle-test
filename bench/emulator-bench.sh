@@ -18,11 +18,13 @@ mkdir -p "$out"
 ADB=${ADB:-adb}
 log() { echo "[$name] $*"; }
 
-pkg=$(aapt2 dump packagename "$apk" 2>/dev/null || "$ANDROID_HOME"/build-tools/*/aapt2 dump packagename "$apk" 2>/dev/null | head -1)
-[ -z "$pkg" ] && pkg=$(unzip -p "$apk" AndroidManifest.xml | strings | grep -m1 -oE 'com\.flappydash\.[a-z_]+')
+# package id = the third-party package that appears after installing (no SDK tools needed)
+before=$($ADB shell pm list packages -3 < /dev/null | tr -d '\r' | sort)
+$ADB install -r -g "$apk" < /dev/null >/dev/null || { log "install failed"; echo "{\"name\":\"$name\",\"smoke\":\"install-failed\"}" > "$out/$name.json"; exit 1; }
+after=$($ADB shell pm list packages -3 < /dev/null | tr -d '\r' | sort)
+pkg=$(comm -13 <(echo "$before") <(echo "$after") | head -1 | sed 's/^package://')
+[ -z "$pkg" ] && pkg=$(echo "$after" | grep -m1 -oE 'com\.flappydash\.[a-z_]+')
 log "package $pkg"
-$ADB uninstall "$pkg" >/dev/null 2>&1
-$ADB install -r -g "$apk" >/dev/null || { log "install failed"; echo "{\"name\":\"$name\",\"smoke\":\"install-failed\"}" > "$out/$name.json"; exit 1; }
 size_kb=$($ADB shell "du -sk \$(dirname \$(pm path $pkg | head -1 | cut -d: -f2))" | awk '{print $1}')
 act=$($ADB shell cmd package resolve-activity --brief "$pkg" | tail -1 | tr -d '\r')
 
