@@ -129,7 +129,7 @@ jobs:
           if [ ${{ matrix.app }} = macroquad ]; then cargo install --locked --git https://github.com/not-fl3/cargo-quad-apk; else cargo install --locked cargo-apk; fi
       - name: Build APK (${{ matrix.abi.name }})
         run: |
-          export NDK_HOME="$ANDROID_NDK_LATEST_HOME" ANDROID_NDK_ROOT="$ANDROID_NDK_LATEST_HOME"
+          export NDK_HOME="$ANDROID_NDK_LATEST_HOME" ANDROID_NDK_ROOT="$ANDROID_NDK_LATEST_HOME" ANDROID_NDK_HOME="$ANDROID_NDK_LATEST_HOME"
           # throwaway debug key so the APK installs directly (same as Android Studio's debug builds)
           [ -f ../debug.keystore ] || keytool -genkeypair -keystore ../debug.keystore -storepass android -keypass android -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
           sed -i 's/^build_targets = .*/build_targets = ["${{ matrix.abi.target }}"]/' Cargo.toml
@@ -161,7 +161,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with: { workspaces: ports/rust }
       - if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y libx11-dev libxi-dev libgl1-mesa-dev libasound2-dev libxkbcommon-x11-0 libudev-dev libwayland-dev
+        run: sudo apt-get update && sudo apt-get install -y libx11-dev libxi-dev libgl1-mesa-dev libasound2-dev libxkbcommon-x11-0 libudev-dev libwayland-dev libfontconfig1-dev
       - run: cargo test --release -p flappy_core
       - run: cargo build --release -p flappy_dash -p flappy_slint -p flappy_bevy
       - run: |
@@ -210,6 +210,108 @@ jobs:
       - uses: actions/upload-artifact@v4
         with: { name: rust-ios, path: out/ }
 
+  # ---------------------------------------------------------------- Rust + Kotlin shells (UniFFI, Crux)
+  rust-kotlin-shell:
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [uniffi, crux]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 21 }
+      - uses: dtolnay/rust-toolchain@stable
+        with: { targets: 'aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android,i686-linux-android' }
+      - uses: Swatinem/rust-cache@v2
+        with: { workspaces: ports/rust, key: 'shell-${{ matrix.app }}' }
+      - run: cargo install --locked cargo-ndk
+      - name: Rust library for all 4 ABIs + Kotlin bindings
+        working-directory: ports/rust
+        run: |
+          export ANDROID_NDK_HOME="$ANDROID_NDK_LATEST_HOME"
+          cargo ndk -t arm64-v8a -t armeabi-v7a -t x86_64 -t x86 -o ../${{ matrix.app }}-android/app/src/main/jniLibs build --release -p flappy_${{ matrix.app }}
+          cargo build -p flappy_${{ matrix.app }}
+          cargo run -p flappy_${{ matrix.app }} --features cli --bin uniffi-bindgen -- generate --library target/debug/libflappy_${{ matrix.app }}.so --language kotlin --out-dir ../${{ matrix.app }}-android/app/src/main/java --no-format
+      - name: APKs (one per ABI + universal)
+        working-directory: 'ports/${{ matrix.app }}-android'
+        run: |
+          ./gradlew assembleRelease --no-daemon
+          mkdir -p ../../out
+          for f in app/build/outputs/apk/release/*.apk; do
+            abi=$(basename "$f" .apk | sed 's/app-//; s/-release//')
+            cp "$f" ../../out/rust-${{ matrix.app }}-android-$abi.apk
+          done
+          ls -la ../../out
+      - uses: actions/upload-artifact@v4
+        with: { name: 'rust-${{ matrix.app }}', path: out/ }
+
+  # ---------------------------------------------------------------- Dioxus (WebView, RSX)
+  rust-dioxus:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 17 }
+      - uses: dtolnay/rust-toolchain@stable
+        with: { targets: 'aarch64-linux-android,x86_64-linux-android,wasm32-unknown-unknown' }
+      - uses: Swatinem/rust-cache@v2
+        with: { workspaces: ports/rust, key: dioxus }
+      - run: cargo install --locked dioxus-cli@0.7.10
+      - name: Android APKs (arm64 + x86_64)
+        working-directory: ports/rust/dioxus
+        run: |
+          export ANDROID_NDK_HOME="$ANDROID_NDK_LATEST_HOME" NDK_HOME="$ANDROID_NDK_LATEST_HOME"
+          [ -f ../debug.keystore ] || keytool -genkeypair -keystore ../debug.keystore -storepass android -keypass android -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+          signer=$(ls "$ANDROID_HOME"/build-tools/*/apksigner | tail -1)
+          mkdir -p ../../../out
+          for t in aarch64-linux-android:arm64-v8a x86_64-linux-android:x86_64; do
+            dx bundle --platform android --release --target ${t%%:*}
+            # dx makes an AAB; build the release APK from the Gradle project it generated
+            (cd ../target/dx/flappy_dioxus/release/android/app && ./gradlew assembleRelease --no-daemon)
+            apk=$(ls ../target/dx/flappy_dioxus/release/android/app/app/build/outputs/apk/release/*.apk | head -1)
+            "$signer" sign --ks ../debug.keystore --ks-pass pass:android --out ../../../out/rust-dioxus-android-${t##*:}.apk "$apk"
+          done
+      - name: Web build
+        working-directory: ports/rust/dioxus
+        run: |
+          dx build --platform web --release
+          (cd ../target/dx/flappy_dioxus/release/web/public && zip -qr ../../../../../../../out/rust-dioxus-web.zip .)
+      - uses: actions/upload-artifact@v4
+        with: { name: rust-dioxus, path: out/ }
+
+  # ---------------------------------------------------------------- Tauri v2 (WebView, Rust shell)
+  rust-tauri:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 17 }
+      - uses: dtolnay/rust-toolchain@stable
+        with: { targets: 'aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android,i686-linux-android' }
+      - uses: Swatinem/rust-cache@v2
+        with: { workspaces: ports/rust/tauri, key: tauri }
+      - run: bun install --frozen-lockfile
+      - run: npm i -g @tauri-apps/cli@2.12.4
+      - name: Android APKs (one per ABI)
+        working-directory: ports/rust/tauri
+        run: |
+          export NDK_HOME="$ANDROID_NDK_LATEST_HOME" ANDROID_NDK_HOME="$ANDROID_NDK_LATEST_HOME"
+          tauri android init --ci
+          tauri android build --apk --split-per-abi
+          [ -f ../debug.keystore ] || keytool -genkeypair -keystore ../debug.keystore -storepass android -keypass android -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+          signer=$(ls "$ANDROID_HOME"/build-tools/*/apksigner | tail -1)
+          mkdir -p ../../../out
+          for f in $(find gen/android/app/build/outputs/apk -name "*release*.apk"); do
+            abi=$(basename "$(dirname "$f")")
+            case "$abi" in arm64) abi=arm64-v8a;; arm) abi=armeabi-v7a;; x86_64) ;; x86) ;; esac
+            "$signer" sign --ks ../debug.keystore --ks-pass pass:android --out ../../../out/rust-tauri-android-$abi.apk "$f"
+          done
+          ls -la ../../../out
+      - uses: actions/upload-artifact@v4
+        with: { name: rust-tauri, path: out/ }
+
   # ---------------------------------------------------------------- Capacitor (WebView shell)
   capacitor-android:
     runs-on: ubuntu-latest
@@ -225,7 +327,7 @@ jobs:
 
   # ---------------------------------------------------------------- publish
   release:
-    needs: [kotlin-compose, java-views, capacitor-android, flutter-linux, flutter-windows, flutter-apple, rust-android, rust-desktop-web, rust-ios]
+    needs: [kotlin-compose, java-views, capacitor-android, rust-kotlin-shell, rust-dioxus, rust-tauri, flutter-linux, flutter-windows, flutter-apple, rust-android, rust-desktop-web, rust-ios]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     steps:

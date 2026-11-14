@@ -12,7 +12,7 @@ on:
       tag:
         description: 'Release tag whose APKs to benchmark'
         required: true
-        default: 'v2.0.0'
+        default: 'v2.1.0'
   push:
     branches: [main]
     paths: ['ports/kotlin-compose/**', 'bench/emulator-*', '.github/workflows/android-test.yml']
@@ -21,7 +21,7 @@ permissions:
   contents: read
 
 env:
-  TAG: ${{ github.event.inputs.tag || 'v2.0.0' }}
+  TAG: ${{ github.event.inputs.tag || 'v2.1.0' }}
 
 jobs:
   ui-test:
@@ -85,10 +85,10 @@ jobs:
           rust-macroquad|rust-android-x86_64.apk|at:0.83
           rust-slint|rust-slint-android-x86_64.apk|at:0.81
           rust-bevy|rust-bevy-android-x86_64.apk|at:0.83
-          rust-dioxus|rust-dioxus-android-x86_64.apk|tap:Benchmark
+          rust-dioxus|rust-dioxus-android-x86_64.apk|tap:Benchmark;0.82
           rust-tauri|rust-tauri-android-x86_64.apk|tap:Settings,Run benchmark
-          rust-uniffi|rust-uniffi-android-x86_64.apk|tap:Benchmark
-          rust-crux|rust-crux-android-x86_64.apk|tap:Benchmark
+          rust-uniffi|rust-uniffi-android-x86_64.apk|tap:Benchmark;0.90
+          rust-crux|rust-crux-android-x86_64.apk|tap:Benchmark;0.90
           PLAN
           sed -i 's/^ *//' plan.txt
       - name: Enable KVM
