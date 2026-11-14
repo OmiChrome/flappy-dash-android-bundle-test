@@ -1,0 +1,10 @@
+[application]
+name = "flappy_dioxus"
+
+[bundle]
+identifier = "com.flappydash.dioxus"
+publisher = "Flappy Dash"
+icon = ["../macroquad/android_res/mipmap-xxxhdpi/ic_launcher.png"]
+
+[web.app]
+title = "Flappy Dash (Dioxus)"
