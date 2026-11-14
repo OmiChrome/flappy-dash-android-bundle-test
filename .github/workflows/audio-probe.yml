@@ -1,0 +1,45 @@
+name: Audio + haptics probe
+
+# Installs Android builds on an emulator WITH audio, taps a few flaps, and records whether each app
+# created a sound player and asked for a vibration. Used to debug "no sound" reports from real phones.
+on:
+  workflow_dispatch:
+    inputs:
+      tag: { description: 'Release tag', required: true, default: 'v2.1.0' }
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env: { TAG: '${{ github.event.inputs.tag }}' }
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download APKs
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          mkdir -p apks
+          gh release download "$TAG" --dir apks --pattern 'expo-android-x86_64.apk' --pattern 'expo-android-universal.apk' --pattern 'rust-tauri-android-x86_64.apk' || true
+          ls -la apks
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Probe
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          ram-size: 4096M
+          emulator-options: -no-window -gpu swiftshader_indirect -no-boot-anim -camera-back none
+          script: |
+            for f in expo-android-x86_64 expo-android-universal; do [ -f apks/$f.apk ] && bash bench/audio-probe.sh $f apks/$f.apk com.flappydash.game probe-out Play; done
+            [ -f apks/rust-tauri-android-x86_64.apk ] && bash bench/audio-probe.sh tauri apks/rust-tauri-android-x86_64.apk com.flappydash.tauri probe-out Play || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: audio-probe, path: probe-out }
