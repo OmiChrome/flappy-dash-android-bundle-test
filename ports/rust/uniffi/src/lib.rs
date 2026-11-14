@@ -11,7 +11,9 @@ uniffi::setup_scaffolding!();
 pub struct Shape { pub round: bool, pub x: f32, pub y: f32, pub w: f32, pub h: f32, pub color: u32, pub alpha: f32 }
 
 #[derive(uniffi::Record)]
-pub struct Frame { pub shapes: Vec<Shape>, pub phase: u8, pub score: u32, pub bench_on: bool, pub bench_left: i32, pub result: Option<Vec<String>>, pub best: u32 }
+pub struct Frame { pub shapes: Vec<Shape>, pub phase: u8, pub score: u32, pub bench_on: bool, pub bench_left: i32, pub result: Option<Vec<String>>, pub best: u32,
+    /// sound/vibration events of this frame (flappy_core::EV_* bits); 0 during the benchmark
+    pub events: u8 }
 
 struct Inner { game: Game, prims: Vec<Prim>, bench_on: bool, bench_ms: f64, times: Vec<f64>, result: Option<Vec<String>>, best: u32 }
 
@@ -64,8 +66,11 @@ impl Engine {
             }
         }
         if before != Phase::Dead && s.game.phase == Phase::Dead && !s.game.bot && s.game.score > s.best { s.best = s.game.score; }
+        let ev = s.game.take_events();
+        let events = if s.bench_on || s.game.bot { 0 } else { ev };
         draw_list(&s.game, world_w, &mut s.prims);
         Frame {
+            events,
             shapes: s.prims.iter().map(|p| Shape { round: p.kind == 0, x: p.x, y: p.y, w: p.w, h: p.h, color: p.color, alpha: p.alpha }).collect(),
             phase: match s.game.phase { Phase::Ready => 0, Phase::Playing => 1, Phase::Dead => 2 },
             score: s.game.score,

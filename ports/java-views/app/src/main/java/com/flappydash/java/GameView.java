@@ -37,6 +37,7 @@ public final class GameView extends View implements Choreographer.FrameCallback 
     private static final float TILE = 360, FLOOR_TILE = 280;
 
     private final Game g = new Game(360, (int) System.nanoTime());
+    private Sfx sfx;
     private final Paint fill = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint stroke = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint text = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -107,8 +108,8 @@ public final class GameView extends View implements Choreographer.FrameCallback 
         return p;
     }
 
-    @Override protected void onAttachedToWindow() { super.onAttachedToWindow(); Choreographer.getInstance().postFrameCallback(this); }
-    @Override protected void onDetachedFromWindow() { Choreographer.getInstance().removeFrameCallback(this); super.onDetachedFromWindow(); }
+    @Override protected void onAttachedToWindow() { super.onAttachedToWindow(); if (sfx == null) sfx = new Sfx(getContext()); Choreographer.getInstance().postFrameCallback(this); }
+    @Override protected void onDetachedFromWindow() { Choreographer.getInstance().removeFrameCallback(this); if (sfx != null) { sfx.release(); sfx = null; } super.onDetachedFromWindow(); }
     @Override protected void onSizeChanged(int w, int h, int ow, int oh) { g.setWidth(w / (h / WORLD_H)); }
 
     @Override public void doFrame(long ns) {
@@ -116,6 +117,7 @@ public final class GameView extends View implements Choreographer.FrameCallback 
         lastNs = ns;
         int before = g.phase;
         g.advance((float) (dtMs / 1000));
+        if (sfx != null) sfx.frame(g, g.bot);
         if (benchOn && dtMs > 0) {
             times.add(dtMs);
             benchMs += dtMs;
