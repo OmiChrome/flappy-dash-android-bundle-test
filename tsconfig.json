@@ -1,5 +1,10 @@
 {
   "extends": "expo/tsconfig.base",
-  "compilerOptions": { "strict": true, "types": ["bun"] },
+  "compilerOptions": {
+    "strict": true,
+    "types": ["bun"],
+    "paths": { "@/*": ["./src/*"] }
+  },
+  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"],
   "exclude": ["scripts", "dist", "dist-android", "node_modules"]
 }

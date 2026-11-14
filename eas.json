@@ -1,9 +1,20 @@
 {
   "cli": { "version": ">= 16.0.0", "appVersionSource": "remote" },
   "build": {
+    "base": { "distribution": "internal", "android": { "buildType": "apk" } },
+
     "development": { "developmentClient": true, "distribution": "internal", "android": { "buildType": "apk" } },
-    "preview": { "distribution": "internal", "android": { "buildType": "apk" } },
-    "production": { "autoIncrement": true, "android": { "buildType": "app-bundle" } }
+
+    "preview": { "extends": "base" },
+    "preview-arm64": { "extends": "base", "env": { "EXPO_ANDROID_ARCHS": "arm64-v8a", "EXPO_ANDROID_MINIFY": "1" } },
+    "preview-armv7": { "extends": "base", "env": { "EXPO_ANDROID_ARCHS": "armeabi-v7a", "EXPO_ANDROID_MINIFY": "1" } },
+    "preview-x86_64": { "extends": "base", "env": { "EXPO_ANDROID_ARCHS": "x86_64", "EXPO_ANDROID_MINIFY": "1" } },
+    "preview-x86": { "extends": "base", "env": { "EXPO_ANDROID_ARCHS": "x86", "EXPO_ANDROID_MINIFY": "1" } },
+    "preview-universal-min": { "extends": "base", "env": { "EXPO_ANDROID_MINIFY": "1" } },
+
+    "ios-simulator": { "ios": { "simulator": true } },
+
+    "production": { "autoIncrement": true, "env": { "EXPO_ANDROID_MINIFY": "1" }, "android": { "buildType": "app-bundle" } }
   },
   "submit": { "production": {} }
 }

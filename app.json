@@ -7,7 +7,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "backgroundColor": "#4EC0F0",
+    "backgroundColor": "#C9ECFF",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.flappydash.game"
@@ -15,7 +15,7 @@
     "android": {
       "package": "com.flappydash.game",
       "adaptiveIcon": {
-        "backgroundColor": "#4EC0F0",
+        "backgroundColor": "#C9ECFF",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -34,15 +34,22 @@
           "image": "./assets/splash-icon.png",
           "imageWidth": 220,
           "resizeMode": "contain",
-          "backgroundColor": "#4EC0F0"
+          "backgroundColor": "#C9ECFF"
         }
-      ]
+      ],
+      "expo-router",
+      "expo-audio",
+      "expo-font",
+      "expo-asset"
     ],
     "owner": "org-69",
     "extra": {
       "eas": {
         "projectId": "4930ea01-7f61-42b8-96b4-cbe7054d0ec8"
       }
+    },
+    "experiments": {
+      "typedRoutes": true
     }
   }
 }

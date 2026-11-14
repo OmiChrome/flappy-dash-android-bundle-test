@@ -1,0 +1,28 @@
+[package]
+name = "flappy_dash"
+version = "1.0.0"
+edition = "2021"
+
+[dependencies]
+macroquad = "0.4.16"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
+
+[package.metadata.android]
+package_name = "com.flappydash.rust"
+label = "Flappy Dash (Rust)"
+version_code = 1
+version_name = "1.0.0"
+build_targets = ["aarch64-linux-android"]
+res = "android_res"
+icon = "@mipmap/ic_launcher"
+fullscreen = true
+
+[package.metadata.android.activity_attributes]
+"android:exported" = "true"
+"android:screenOrientation" = "portrait"
