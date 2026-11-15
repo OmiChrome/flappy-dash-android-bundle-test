@@ -301,19 +301,29 @@ mod tests {
     }
 }
 
+/// Sends Rust panic messages to logcat (tag `FlappyPanic`) on Android, where stderr goes nowhere.
+/// Call once at startup.
+pub fn log_panics() {
+    #[cfg(target_os = "android")]
+    std::panic::set_hook(Box::new(|info| android_log(6, "FlappyPanic", &info.to_string())));
+}
+
+#[cfg(target_os = "android")]
+fn android_log(prio: i32, tag: &str, msg: &str) {
+    #[link(name = "log")]
+    extern "C" {
+        fn __android_log_write(prio: i32, tag: *const std::os::raw::c_char, text: *const std::os::raw::c_char) -> i32;
+    }
+    let tag = std::ffi::CString::new(tag).unwrap_or_default();
+    let text = std::ffi::CString::new(msg.replace('\0', " ")).unwrap_or_default();
+    unsafe { __android_log_write(prio, tag.as_ptr(), text.as_ptr()); }
+}
+
 /// Prints benchmark results; on Android also writes them to logcat with tag `FlappyBench`
 /// so the emulator CI (bench/emulator-bench.sh) can collect them.
 pub fn report(framework: &str, lines: &[String]) {
     let msg = format!("RESULT framework={framework} | {}", lines[1..lines.len().saturating_sub(1)].join(" | "));
     println!("{msg}");
     #[cfg(target_os = "android")]
-    {
-        #[link(name = "log")]
-        extern "C" {
-            fn __android_log_write(prio: i32, tag: *const std::os::raw::c_char, text: *const std::os::raw::c_char) -> i32;
-        }
-        let tag = std::ffi::CString::new("FlappyBench").unwrap();
-        let text = std::ffi::CString::new(msg).unwrap_or_default();
-        unsafe { __android_log_write(4, tag.as_ptr(), text.as_ptr()); }
-    }
+    android_log(4, "FlappyBench", &msg);
 }

@@ -6,6 +6,9 @@ mkdir -p "$out"
 adb root >/dev/null 2>&1; sleep 2; adb wait-for-device
 adb shell settings put system screen_off_timeout 1800000
 adb shell svc power stayon true
+# hide crash / "isn't responding" dialogs from other apps (the emulator's launcher can freeze under load)
+adb shell settings put global hide_error_dialogs 1
+adb shell settings put global anr_show_background 0
 fail=0
 # read the plan on fd 3: adb would otherwise swallow the loop's stdin after the first app
 while IFS='|' read -r name apk how <&3; do

@@ -158,6 +158,7 @@ pub fn run() {
 #[cfg(target_os = "android")]
 #[no_mangle]
 fn android_main(app: slint::android::AndroidApp) {
+    flappy_core::log_panics();
     slint::android::init(app).unwrap();
     run();
 }
