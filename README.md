@@ -14,20 +14,20 @@
 
 ## The short answer
 
-| | Framework | APK (arm64) | RAM | Cold start | Smoothness ¹ |
-|---|---|---:|---:|---:|:---:|
-| ![](https://cdn.simpleicons.org/openjdk/ED8B00) | **Java + Android Views** | 0.07 MB | 22 MB | 1.5 s | ★★★☆ |
-| ![](https://cdn.simpleicons.org/kotlin/7F52FF) | **Kotlin + Jetpack Compose** | 0.83 MB | 28 MB | 2.0 s | ★★☆☆ |
-| ![](https://cdn.simpleicons.org/rust/000000) | **Slint (Rust)** ² | 6.0 MB | 41 MB | **0.7 s** | ★★★★ |
-| ![](https://cdn.simpleicons.org/capacitor/119EFF) | **Capacitor** (web app in a shell) | 5.2 MB | 79 MB | 1.3 s | – |
-| ![](https://cdn.simpleicons.org/flutter/02569B) | **Flutter** | 15.0 MB | 60 MB | 3.8 s | ★★☆☆ |
-| ![](https://cdn.simpleicons.org/expo/000020) | **Expo / React Native** | 44.1 MB | 125 MB | 4.3 s | ★☆☆☆ |
+| | Framework | APK (arm64) | RAM | Cold start | Smoothness ¹ | Sound · vibration |
+|---|---|---:|---:|---:|:---:|:---:|
+| ![](https://cdn.simpleicons.org/openjdk/ED8B00) | **Java + Android Views** | 0.19 MB | 23 MB | 1.7 s | ★★★☆ | ✅ ✅ |
+| ![](https://cdn.simpleicons.org/kotlin/7F52FF) | **Kotlin + Jetpack Compose** | 0.95 MB | 29 MB | 3.1 s | ★★☆☆ | ✅ ✅ |
+| ![](https://cdn.simpleicons.org/rust/000000) | **Slint (Rust)** ² | 6.2 MB | 42 MB | **0.8 s** | ★★★★ | ✅ ✅ |
+| ![](https://cdn.simpleicons.org/capacitor/119EFF) | **Capacitor** (web app in a shell) | 5.2 MB | 78 MB | 1.9 s | – | ✅ ❌ ³ |
+| ![](https://cdn.simpleicons.org/flutter/02569B) | **Flutter** | 15.2 MB | 62 MB | 5.1 s | ★★☆☆ | ✅ ✅ |
+| ![](https://cdn.simpleicons.org/expo/000020) | **Expo / React Native** | 44.1 MB | 121 MB | 4.2 s | ★☆☆☆ | ✅ ✅ |
 
-<sub>Measured on an Android 14 emulator running the same 60-second autopilot course in every app. ¹ Stars come from frame rate and "1% low" (how bad the worst stutters are). ² The best production-ready Rust option (it draws a slightly simpler picture, which helps its smoothness); all 8 Rust options are in the [Rust benchmark](docs/BENCHMARK-RUST.md). Full numbers and caveats: [Benchmark](docs/BENCHMARK.md).</sub>
+<sub>Measured on an Android 14 emulator running the same 60-second autopilot course in every app (release v2.2.0). ¹ Stars come from frame rate and "1% low" (how bad the worst stutters are). ² The best production-ready Rust option (it draws a slightly simpler picture, which helps its smoothness); all 8 Rust options are in the [Rust benchmark](docs/BENCHMARK-RUST.md). ³ The test robot saw no vibration; it most likely never got past the menu. Full numbers and caveats: [Benchmark](docs/BENCHMARK.md).</sub>
 
 **In plain words**
 - **Native Android (Java/Kotlin)** is tiny and light. It's the right choice if you only need Android.
-- **Expo** costs about 44 MB and 125 MB of RAM. You pay for one codebase across Android, iOS and web, React skills, and instant updates. Most of the size is the Skia graphics library this game uses, not Expo itself.
+- **Expo** costs about 44 MB and 120 MB of RAM. You pay for one codebase across Android, iOS and web, React skills, and instant updates. Most of the size is the Skia graphics library this game uses, not Expo itself.
 - **Flutter** gives you every platform at a third of Expo's size and half its RAM.
 - **Slint (Rust)** started fastest and stuttered least of everything tested.
 

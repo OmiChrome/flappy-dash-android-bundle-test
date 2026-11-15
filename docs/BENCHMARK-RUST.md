@@ -24,34 +24,34 @@ Every port runs the same game engine (`ports/rust/core`, a shared Rust library),
 
 | Framework | APK | Notes |
 |---|---:|---|
-| macroquad | **0.44 MB** | Game + renderer + window in one 0.37 MB library |
-| UniFFI | 1.45 MB | Rust library + JNA (lets Kotlin call native code) + Compose |
-| Crux | 1.53 MB | Same as UniFFI, plus the Crux core |
-| Dioxus | 3.6 MB | Rust + WebView glue |
-| Slint | 6.0 MB | Includes Skia (its GPU drawing library) |
-| Tauri | 9.7 MB ¹ | Rust shell + the Expo web build in the phone's WebView |
-| Bevy | 11.9 MB | Whole game engine + wgpu (GPU layer) |
+| macroquad | **0.67 MB** | Game + renderer + window + audio in one library |
+| UniFFI | 1.55 MB | Rust library + JNA (lets Kotlin call native code) + Compose |
+| Crux | 1.65 MB | Same as UniFFI, plus the Crux core |
+| Dioxus | 3.8 MB | Rust + WebView glue + sounds |
+| Slint | 6.2 MB | Includes Skia (its GPU drawing library) |
+| Tauri | 9.2 MB | Rust shell + the Expo web build in the phone's WebView |
+| Bevy | 12.1 MB | Whole game engine + wgpu (GPU layer) |
 
-¹ Tauri: the size of the x86_64 APK (Rust shell + the Expo web build, about 4 MB compressed).
+All Rust apps share one sound crate (`ports/rust/sfx`: a tiny audio mixer + Android vibration), except Dioxus and Tauri, which play sounds through the WebView.
 
 ## Speed and memory (Android 14 emulator, software GPU)
 
-| Framework | Cold start | RAM | CPU | Avg fps | 1% low | Dropped |
-|---|---:|---:|---:|---:|---:|---:|
-| **Slint** | **0.67 s** | 41 MB | 52 % | **19.8** | **13** | 36 % |
-| Crux | 0.98 s | **28 MB** | 54 % | 18.8 | 9 | **28 %** |
-| UniFFI | 1.26 s | **28 MB** | 56 % | 18.6 | 8 | 31 % |
-| Dioxus | 1.20 s | 72 MB | 86 % | 16.9 | 9 | 48 % |
-| Bevy | 1.19 s | 98 MB | 77 % | – ² | – | – |
-| macroquad | – | – | – | – ³ | – | – |
-| Tauri | 1.12 s | 91 MB | 94 % | – ⁴ | – | – |
+| Framework | Cold start | RAM | CPU | Avg fps | 1% low | Dropped | Sound | Vibration |
+|---|---:|---:|---:|---:|---:|---:|:---:|:---:|
+| **Slint** | **0.79 s** | 42 MB | 52 % | **17.6** | **12** | 44 % | ✅ | ✅ |
+| Crux | 1.28 s | **29 MB** | 54 % | 16.7 | 7 | **39 %** | ✅ | ✅ |
+| UniFFI | 1.23 s | **29 MB** | 54 % | 16.7 | 8 | **39 %** | ✅ | ✅ |
+| Dioxus | 1.49 s | 78 MB | 84 % | 15.2 | 8 | 51 % | ✅ | ✅ |
+| Bevy | 1.41 s | 98 MB | 68 % | – ² | – | – | ✅ | ✅ |
+| Tauri | 1.09 s | 93 MB | 76 % | – ⁴ | – | – | ✅ | ✅ |
+| macroquad | – | – | – | – ³ | – | – | – | – |
 
 - The emulator has no real GPU, so all fps numbers are low. Compare rows with each other.
 - All rows above draw the **same simplified picture** (circles and rectangles from the shared draw list), so this table is a fair fight.
 - ² Bevy started fine (smoke test ✅) but didn't log its benchmark result within 100 s.
-- ³ macroquad closes right after launch on the x86_64 emulator image. It runs fine on desktop and web; arm64 phones are untested.
-- ⁴ Tauri shows a web page (the Expo web build), whose benchmark button the test robot can't press, same as Capacitor. Its start, RAM and CPU were measured. It is the heaviest Rust option on RAM and CPU because it runs a whole web engine.
-- Two emulator runs gave the same ranking (run-to-run variation is about ±15 %).
+- ³ macroquad asked the emulator's software GPU for 4× anti-aliasing (smoothed edges), which it doesn't offer, and closed. Fixed for the next release: Android builds now ask for none. Before v2.2.0 it also looked for the wrong library name.
+- ⁴ Tauri shows a web page (the Expo web build), whose benchmark button the test robot can't press, same as Capacitor. It is the heaviest Rust option on RAM and CPU because it runs a whole web engine.
+- Several emulator runs gave the same ranking (frame rates vary about ±15 %, start times up to ±40 %).
 
 ## Desktop (Linux, no GPU, virtual screen) {#desktop}
 

@@ -10,11 +10,11 @@ APK for **one arm64 phone** (almost every phone sold since 2017):
 
 | Framework | APK | What's inside |
 |---|---:|---|
-| ![](https://cdn.simpleicons.org/openjdk/ED8B00) Java + Android Views | **0.07 MB** | Only our code. The drawing engine is built into Android |
-| ![](https://cdn.simpleicons.org/kotlin/7F52FF) Kotlin + Jetpack Compose | **0.83 MB** | Our code + the Compose UI library |
+| ![](https://cdn.simpleicons.org/openjdk/ED8B00) Java + Android Views | **0.19 MB** | Our code + 6 sound files. The drawing engine is built into Android |
+| ![](https://cdn.simpleicons.org/kotlin/7F52FF) Kotlin + Jetpack Compose | **0.95 MB** | Our code + the Compose UI library + sounds |
 | ![](https://cdn.simpleicons.org/capacitor/119EFF) Capacitor | **5.2 MB** | The Expo web build, shown in the phone's own WebView (built-in browser) |
-| ![](https://cdn.simpleicons.org/rust/000000) Slint (Rust) | **6.0 MB** | Our Rust code + Slint's renderer |
-| ![](https://cdn.simpleicons.org/flutter/02569B) Flutter | **15.0 MB** | Flutter engine 10.8 MB + our Dart code 3.1 MB |
+| ![](https://cdn.simpleicons.org/rust/000000) Slint (Rust) | **6.2 MB** | Our Rust code + Slint's renderer + a small audio mixer |
+| ![](https://cdn.simpleicons.org/flutter/02569B) Flutter | **15.2 MB** | Flutter engine 10.8 MB + our Dart code + the audio plugin |
 | ![](https://cdn.simpleicons.org/expo/000020) Expo / React Native | **44.1 MB** | Skia 13.7 MB · React Native 6.7 MB · Hermes (JS engine) 2.6 MB · Reanimated 2.8 MB · code 3.4 MB · JS + assets 3.6 MB |
 
 > **Why is Expo so big?** It isn't Expo itself (about 1.5 MB). It's the **Skia** drawing library we added for smooth graphics (13.7 MB), plus the React Native and JavaScript engines (about 10 MB). Without Skia it would be about 30 MB.
@@ -25,14 +25,14 @@ Other CPU types are in the [release](../../../releases): armv7 (old 32-bit phone
 
 Every app ran the **same 60-second autopilot course** on the same emulator ([how](CI.md)).
 
-| Framework | Cold start | RAM | CPU | Avg fps | 1% low fps | Dropped frames |
-|---|---:|---:|---:|---:|---:|---:|
-| Slint (Rust) ¹ | **0.67 s** | 41 MB | 52 % | **19.8** | **13** | **36 %** |
-| Java + Views | 1.49 s | **22 MB** | 65 % | 11.2 | 5 | 60 % |
-| Kotlin + Compose | 2.04 s | 28 MB | 56 % | 9.9 | 4 | 65 % |
-| Flutter | 3.79 s | 60 MB | 58 % | 9.0 | 5 | 70 % |
-| Expo / React Native | 4.25 s | 125 MB | 45 % | 5.9 | 3 | 79 % |
-| Capacitor ² | 1.32 s | 79 MB | 91 % | – | – | – |
+| Framework | Cold start | RAM | CPU | Avg fps | 1% low fps | Dropped frames | Sound | Vibration |
+|---|---:|---:|---:|---:|---:|---:|:---:|:---:|
+| Slint (Rust) ¹ | **0.79 s** | 42 MB | 52 % | **17.6** | **12** | **44 %** | ✅ | ✅ |
+| Java + Views | 1.75 s | **23 MB** | 65 % | 9.9 | 4 | 64 % | ✅ | ✅ |
+| Kotlin + Compose | 3.07 s | 29 MB | 51 % | 8.4 | 4 | 70 % | ✅ | ✅ |
+| Flutter | 5.14 s | 62 MB | 59 % | 7.8 | 4 | 75 % | ✅ | ✅ |
+| Expo / React Native | 4.21 s | 121 MB | 44 % | 5.0 | 3 | 83 % | ✅ | ✅ |
+| Capacitor ² | 1.85 s | 78 MB | 98 % | – | – | – | ✅ | ❌ ³ |
 
 **What the columns mean**
 - **Cold start:** time from tapping the icon to the first picture.
@@ -44,8 +44,10 @@ Every app ran the **same 60-second autopilot course** on the same emulator ([how
 **Read this before comparing**
 - The emulator has **no real GPU**. It draws in software at 30 Hz, so every fps number is low. A real phone is many times faster. Use the table to see **who is faster than whom**, not real speeds.
 - ¹ Slint draws a slightly simpler picture (circles and rectangles instead of curved paths and gradients). That helps its fps. Its cold start, RAM and size are still directly comparable.
-- Two emulator runs gave the same ranking (run-to-run variation is about ±15 %).
+- Several emulator runs gave the same ranking. Frame rates vary about ±15 % between runs, start times up to ±40 % (the emulator shares its CPU with other work).
+- **Sound** = the app opened an audio stream when the bird flapped. **Vibration** = it asked Android to vibrate. Both checked by a robot on the emulator ([how](CI.md)).
 - ² Capacitor's benchmark button is inside a web page, which the test robot couldn't press. Its start, RAM and CPU were measured.
+- ³ Capacitor uses the same web code as Tauri, which did vibrate. The robot most likely never got past the menu.
 
 ## 3. Verdict
 

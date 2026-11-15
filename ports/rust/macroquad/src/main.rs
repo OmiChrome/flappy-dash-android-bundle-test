@@ -4,7 +4,9 @@ use macroquad::models::{draw_mesh, Mesh, Vertex};
 use macroquad::prelude::*;
 
 fn conf() -> Conf {
-    Conf { window_title: "Flappy Dash (Rust)".into(), window_width: 400, window_height: 820, high_dpi: true, sample_count: 4, ..Default::default() }
+    Conf { window_title: "Flappy Dash (Rust)".into(), window_width: 400, window_height: 820, high_dpi: true,
+        // 4x anti-aliasing on desktop; Android asks for none, since some GPUs (and the emulator) offer no such mode and miniquad aborts
+        sample_count: if cfg!(target_os = "android") { 1 } else { 4 }, ..Default::default() }
 }
 
 const fn hex(c: u32) -> Color {

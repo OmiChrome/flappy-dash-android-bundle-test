@@ -1,129 +1,152 @@
 {
  "measured": "2026-11-14",
- "run": "https://github.com/OmiChrome/flappy-dash-android-bundle-test/actions/runs/43585156949",
+ "run": "https://github.com/OmiChrome/flappy-dash-android-bundle-test/actions/runs/43663425488",
  "device": "Android emulator, API 34 (Android 14), google_apis x86_64, pixel_6 profile, 4 GB RAM, KVM, SwiftShader software GPU, 30 Hz",
  "note": "Software GPU: absolute fps is low for every app; compare apps with each other. Rust UI ports (slint, bevy, dioxus, uniffi, crux) draw the simplified draw list (circles + rectangles); the others draw the full art (paths, gradients).",
  "results": [
   {
-   "name": "rust-slint",
-   "apkMB": 6.13,
-   "coldStartMs": 669,
-   "pssAvgMB": 41,
-   "cpuPct": 51.9,
-   "avgFps": 19.8,
-   "low1Fps": 13,
-   "droppedPct": 35.6
-  },
-  {
-   "name": "rust-crux",
-   "apkMB": 1.53,
-   "coldStartMs": 979,
-   "pssAvgMB": 28,
-   "cpuPct": 53.7,
-   "avgFps": 18.8,
-   "low1Fps": 9,
-   "droppedPct": 27.9
-  },
-  {
-   "name": "rust-uniffi",
-   "apkMB": 1.44,
-   "coldStartMs": 1257,
-   "pssAvgMB": 28,
-   "cpuPct": 55.5,
-   "avgFps": 18.6,
-   "low1Fps": 8,
-   "droppedPct": 30.5
-  },
-  {
-   "name": "rust-dioxus",
-   "apkMB": 5.2,
-   "coldStartMs": 1204,
-   "pssAvgMB": 72,
-   "cpuPct": 86.4,
-   "avgFps": 16.9,
-   "low1Fps": 9,
-   "droppedPct": 47.7
-  },
-  {
-   "name": "java-views",
-   "apkMB": 0.07,
-   "coldStartMs": 1489,
-   "pssAvgMB": 22,
-   "cpuPct": 65.3,
-   "avgFps": 11.2,
-   "low1Fps": 5,
-   "droppedPct": 59.5
+   "name": "expo",
+   "apkMB_arm64": 44.14,
+   "coldStartMs": 4211,
+   "pssAvgMB": 121,
+   "cpuPct": 43.8,
+   "avgFps": 5.0,
+   "low1Fps": 3,
+   "droppedPct": 82.6,
+   "sound": true,
+   "vibration": true
   },
   {
    "name": "kotlin-compose",
-   "apkMB": 0.83,
-   "coldStartMs": 2040,
-   "pssAvgMB": 28,
-   "cpuPct": 56.2,
+   "apkMB_arm64": 0.95,
+   "coldStartMs": 3065,
+   "pssAvgMB": 29,
+   "cpuPct": 50.6,
+   "avgFps": 8.4,
+   "low1Fps": 4,
+   "droppedPct": 69.9,
+   "sound": true,
+   "vibration": true
+  },
+  {
+   "name": "java-views",
+   "apkMB_arm64": 0.19,
+   "coldStartMs": 1749,
+   "pssAvgMB": 23,
+   "cpuPct": 64.8,
    "avgFps": 9.9,
    "low1Fps": 4,
-   "droppedPct": 64.5
+   "droppedPct": 64.2,
+   "sound": true,
+   "vibration": true
   },
   {
    "name": "flutter",
-   "apkMB": 16.06,
-   "coldStartMs": 3786,
-   "pssAvgMB": 60,
-   "cpuPct": 58.1,
-   "avgFps": 9.0,
-   "low1Fps": 5,
-   "droppedPct": 70.4
-  },
-  {
-   "name": "expo",
-   "apkMB": 45.0,
-   "coldStartMs": 4251,
-   "pssAvgMB": 125,
-   "cpuPct": 44.7,
-   "avgFps": 5.9,
-   "low1Fps": 3,
-   "droppedPct": 79.3
+   "apkMB_arm64": 15.2,
+   "coldStartMs": 5141,
+   "pssAvgMB": 62,
+   "cpuPct": 59.2,
+   "avgFps": 7.8,
+   "low1Fps": 4,
+   "droppedPct": 74.9,
+   "sound": true,
+   "vibration": true
   },
   {
    "name": "capacitor",
-   "apkMB": 5.24,
-   "coldStartMs": 1315,
-   "pssAvgMB": 79,
-   "cpuPct": 90.8,
+   "apkMB_arm64": 5.24,
+   "coldStartMs": 1852,
+   "pssAvgMB": 78,
+   "cpuPct": 98.2,
    "avgFps": null,
    "low1Fps": null,
-   "droppedPct": null
-  },
-  {
-   "name": "rust-bevy",
-   "apkMB": 12.58,
-   "coldStartMs": 1188,
-   "pssAvgMB": 98,
-   "cpuPct": 76.5,
-   "avgFps": null,
-   "low1Fps": null,
-   "droppedPct": null
+   "droppedPct": null,
+   "sound": true,
+   "vibration": false
   },
   {
    "name": "rust-macroquad",
-   "apkMB": 0.46,
+   "apkMB_arm64": 0.67,
    "coldStartMs": null,
    "pssAvgMB": null,
    "cpuPct": null,
    "avgFps": null,
    "low1Fps": null,
-   "droppedPct": null
+   "droppedPct": null,
+   "sound": false,
+   "vibration": false
   },
   {
-   "name": "rust-tauri",
-   "apkMB": 9.66,
-   "coldStartMs": 1120,
-   "pssAvgMB": 91,
-   "cpuPct": 93.5,
+   "name": "rust-slint",
+   "apkMB_arm64": 6.17,
+   "coldStartMs": 792,
+   "pssAvgMB": 42,
+   "cpuPct": 52.4,
+   "avgFps": 17.6,
+   "low1Fps": 12,
+   "droppedPct": 43.8,
+   "sound": true,
+   "vibration": true
+  },
+  {
+   "name": "rust-bevy",
+   "apkMB_arm64": 12.11,
+   "coldStartMs": 1409,
+   "pssAvgMB": 98,
+   "cpuPct": 67.5,
    "avgFps": null,
    "low1Fps": null,
    "droppedPct": null,
-   "run": "https://github.com/OmiChrome/flappy-dash-android-bundle-test/actions/runs/43587238060"
+   "sound": true,
+   "vibration": true
+  },
+  {
+   "name": "rust-dioxus",
+   "apkMB_arm64": 3.79,
+   "coldStartMs": 1488,
+   "pssAvgMB": 78,
+   "cpuPct": 84.0,
+   "avgFps": 15.2,
+   "low1Fps": 8,
+   "droppedPct": 50.9,
+   "sound": true,
+   "vibration": true
+  },
+  {
+   "name": "rust-tauri",
+   "apkMB_arm64": 9.19,
+   "coldStartMs": 1094,
+   "pssAvgMB": 93,
+   "cpuPct": 76.4,
+   "avgFps": null,
+   "low1Fps": null,
+   "droppedPct": null,
+   "sound": true,
+   "vibration": true
+  },
+  {
+   "name": "rust-uniffi",
+   "apkMB_arm64": 1.55,
+   "coldStartMs": 1231,
+   "pssAvgMB": 29,
+   "cpuPct": 54.2,
+   "avgFps": 16.7,
+   "low1Fps": 8,
+   "droppedPct": 38.6,
+   "sound": true,
+   "vibration": true
+  },
+  {
+   "name": "rust-crux",
+   "apkMB_arm64": 1.65,
+   "coldStartMs": 1284,
+   "pssAvgMB": 29,
+   "cpuPct": 53.8,
+   "avgFps": 16.7,
+   "low1Fps": 7,
+   "droppedPct": 38.7,
+   "sound": true,
+   "vibration": true
   }
  ],
  "issues": {
@@ -135,5 +158,146 @@
  "second_run": {
   "url": "https://github.com/OmiChrome/flappy-dash-android-bundle-test/actions/runs/43587238060",
   "note": "same ranking; values within about \u00b115 %"
- }
+ },
+ "previous": {
+  "measured": "2026-11-14",
+  "run": "https://github.com/OmiChrome/flappy-dash-android-bundle-test/actions/runs/43585156949",
+  "device": "Android emulator, API 34 (Android 14), google_apis x86_64, pixel_6 profile, 4 GB RAM, KVM, SwiftShader software GPU, 30 Hz",
+  "note": "Software GPU: absolute fps is low for every app; compare apps with each other. Rust UI ports (slint, bevy, dioxus, uniffi, crux) draw the simplified draw list (circles + rectangles); the others draw the full art (paths, gradients).",
+  "results": [
+   {
+    "name": "rust-slint",
+    "apkMB": 6.13,
+    "coldStartMs": 669,
+    "pssAvgMB": 41,
+    "cpuPct": 51.9,
+    "avgFps": 19.8,
+    "low1Fps": 13,
+    "droppedPct": 35.6
+   },
+   {
+    "name": "rust-crux",
+    "apkMB": 1.53,
+    "coldStartMs": 979,
+    "pssAvgMB": 28,
+    "cpuPct": 53.7,
+    "avgFps": 18.8,
+    "low1Fps": 9,
+    "droppedPct": 27.9
+   },
+   {
+    "name": "rust-uniffi",
+    "apkMB": 1.44,
+    "coldStartMs": 1257,
+    "pssAvgMB": 28,
+    "cpuPct": 55.5,
+    "avgFps": 18.6,
+    "low1Fps": 8,
+    "droppedPct": 30.5
+   },
+   {
+    "name": "rust-dioxus",
+    "apkMB": 5.2,
+    "coldStartMs": 1204,
+    "pssAvgMB": 72,
+    "cpuPct": 86.4,
+    "avgFps": 16.9,
+    "low1Fps": 9,
+    "droppedPct": 47.7
+   },
+   {
+    "name": "java-views",
+    "apkMB": 0.07,
+    "coldStartMs": 1489,
+    "pssAvgMB": 22,
+    "cpuPct": 65.3,
+    "avgFps": 11.2,
+    "low1Fps": 5,
+    "droppedPct": 59.5
+   },
+   {
+    "name": "kotlin-compose",
+    "apkMB": 0.83,
+    "coldStartMs": 2040,
+    "pssAvgMB": 28,
+    "cpuPct": 56.2,
+    "avgFps": 9.9,
+    "low1Fps": 4,
+    "droppedPct": 64.5
+   },
+   {
+    "name": "flutter",
+    "apkMB": 16.06,
+    "coldStartMs": 3786,
+    "pssAvgMB": 60,
+    "cpuPct": 58.1,
+    "avgFps": 9.0,
+    "low1Fps": 5,
+    "droppedPct": 70.4
+   },
+   {
+    "name": "expo",
+    "apkMB": 45.0,
+    "coldStartMs": 4251,
+    "pssAvgMB": 125,
+    "cpuPct": 44.7,
+    "avgFps": 5.9,
+    "low1Fps": 3,
+    "droppedPct": 79.3
+   },
+   {
+    "name": "capacitor",
+    "apkMB": 5.24,
+    "coldStartMs": 1315,
+    "pssAvgMB": 79,
+    "cpuPct": 90.8,
+    "avgFps": null,
+    "low1Fps": null,
+    "droppedPct": null
+   },
+   {
+    "name": "rust-bevy",
+    "apkMB": 12.58,
+    "coldStartMs": 1188,
+    "pssAvgMB": 98,
+    "cpuPct": 76.5,
+    "avgFps": null,
+    "low1Fps": null,
+    "droppedPct": null
+   },
+   {
+    "name": "rust-macroquad",
+    "apkMB": 0.46,
+    "coldStartMs": null,
+    "pssAvgMB": null,
+    "cpuPct": null,
+    "avgFps": null,
+    "low1Fps": null,
+    "droppedPct": null
+   },
+   {
+    "name": "rust-tauri",
+    "apkMB": 9.66,
+    "coldStartMs": 1120,
+    "pssAvgMB": 91,
+    "cpuPct": 93.5,
+    "avgFps": null,
+    "low1Fps": null,
+    "droppedPct": null,
+    "run": "https://github.com/OmiChrome/flappy-dash-android-bundle-test/actions/runs/43587238060"
+   }
+  ],
+  "issues": {
+   "rust-macroquad": "exits right after launch on the x86_64 emulator image (crash before first frame)",
+   "capacitor": "benchmark could not be started by automation (WebView buttons not in the accessibility tree); smoke/RAM/CPU/cold start measured",
+   "rust-bevy": "no benchmark result logged within 100 s; smoke/RAM/CPU/cold start measured",
+   "rust-tauri": "WebView benchmark button not reachable by automation (like Capacitor); smoke/RAM/CPU/cold start measured"
+  },
+  "second_run": {
+   "url": "https://github.com/OmiChrome/flappy-dash-android-bundle-test/actions/runs/43587238060",
+   "note": "same ranking; values within about \u00b115 %"
+  }
+ },
+ "release": "v2.2.0",
+ "soundProbe": "https://github.com/OmiChrome/flappy-dash-android-bundle-test/actions/runs/43660385047"
 }
