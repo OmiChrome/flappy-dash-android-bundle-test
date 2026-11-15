@@ -5,7 +5,7 @@ flutter|flutter-android-x86_64.apk|com.flappydash.flutter|
 capacitor|capacitor-android.apk|com.flappydash.capacitor|Play
 slint|rust-slint-android-x86_64.apk|com.flappydash.slint|
 bevy|rust-bevy-android-x86_64.apk|com.flappydash.bevy|
-macroquad|rust-android-x86_64.apk|com.flappydash.rust|
+macroquad|rust-android-x86_64.apk|com.flappydash.flappy_dash|
 dioxus|rust-dioxus-android-x86_64.apk|com.flappydash.dioxus|
 tauri|rust-tauri-android-x86_64.apk|com.flappydash.tauri|Play
 uniffi|rust-uniffi-android-x86_64.apk|com.flappydash.uniffi|

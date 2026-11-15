@@ -44,7 +44,7 @@ When it asks, start the in-app benchmark on the phone. You get cold start, RAM, 
 | Expo | `com.flappydash.game` |
 | Kotlin · Java · Flutter | `com.flappydash.kotlin` · `.java` · `.flutter` |
 | Capacitor | `com.flappydash.capacitor` |
-| Rust: macroquad · Slint · Bevy | `com.flappydash.rust` · `.slint` · `.bevy` |
+| Rust: macroquad · Slint · Bevy | `com.flappydash.flappy_dash` · `.slint` · `.bevy` |
 | Rust: Dioxus · Tauri · UniFFI · Crux | `com.flappydash.dioxus` · `.tauri` · `.uniffi` · `.crux` |
 
 ## 3. What the numbers mean
