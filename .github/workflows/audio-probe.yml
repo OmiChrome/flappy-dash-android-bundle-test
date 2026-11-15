@@ -21,7 +21,7 @@ jobs:
         env: { GH_TOKEN: '${{ github.token }}' }
         run: |
           mkdir -p apks
-          gh release download "$TAG" --dir apks --pattern 'expo-android-x86_64.apk' --pattern 'expo-android-universal.apk' --pattern 'rust-tauri-android-x86_64.apk' || true
+          gh release download "$TAG" --dir apks --pattern '*x86_64*.apk' --pattern 'kotlin-compose-android.apk' --pattern 'java-views-android.apk' --pattern 'capacitor-android.apk' || true
           ls -la apks
       - name: Enable KVM
         run: |
@@ -37,9 +37,12 @@ jobs:
           profile: pixel_6
           ram-size: 4096M
           emulator-options: -no-window -gpu swiftshader_indirect -no-boot-anim -camera-back none
-          script: |
-            for f in expo-android-x86_64 expo-android-universal; do [ -f apks/$f.apk ] && bash bench/audio-probe.sh $f apks/$f.apk com.flappydash.game probe-out Play; done
-            [ -f apks/rust-tauri-android-x86_64.apk ] && bash bench/audio-probe.sh tauri apks/rust-tauri-android-x86_64.apk com.flappydash.tauri probe-out Play || true
+          # the emulator action runs each script line on its own, so the loop lives in a file
+          script: bash bench/audio-probe-all.sh bench/audio-plan.txt apks probe-out
+      - name: Summary
+        if: always()
+        run: |
+          { echo '| App | Sound player opened | Vibrations |'; echo '|---|---|---|'; cat probe-out/summary.md 2>/dev/null; } | tee -a "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         if: always()
         with: { name: audio-probe, path: probe-out }

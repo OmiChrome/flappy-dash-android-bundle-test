@@ -31,6 +31,12 @@
 - **Flutter** gives you every platform at a third of Expo's size and half its RAM.
 - **Slint (Rust)** started fastest and stuttered least of everything tested.
 
+**A friend's advice**
+- **Normal app:** Jetpack Compose on Android; UIKit (slightly faster) or SwiftUI on iPhone.
+- **Game:** Flutter.
+
+**Next port idea, for the love of the game:** LVGL + Java JNI. LVGL is a tiny C graphics library made for watches and smart appliances. JNI (Java Native Interface) lets a thin Java app call it.
+
 ## What's in the game
 
 🐤 6 fluffy characters · ☁️ cotton-candy towers that speed up · ⭐ stars to collect · 🌅 4 skies · 🏆 leaderboard + stats · 🔊 sounds + vibration · ⏱ built-in 60-second benchmark
