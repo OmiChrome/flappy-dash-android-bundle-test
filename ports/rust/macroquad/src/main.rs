@@ -270,6 +270,7 @@ fn save_best(v: u32) { if let Some(p) = best_path() { let _ = std::fs::write(p, 
 
 #[macroquad::main(conf)]
 async fn main() {
+    flappy_core::log_panics();
     let art = Art { hill_far: wave(78.0, FLOOR_Y - 10.0, 0.2, 2.0), hill_near: wave(52.0, FLOOR_Y + 8.0, 1.4, 3.0), fluff: fluff_circles() };
     let _ = &art.fluff;
     let mut g = Game::new(360.0, (macroquad::miniquad::date::now() * 1000.0) as i32);

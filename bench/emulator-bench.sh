@@ -38,6 +38,9 @@ done
 cold=$(printf '%s\n' "${starts[@]}" | sort -n | sed -n 2p)
 log "cold start ${starts[*]} -> $cold ms"
 
+# keep the launch log (a crash during the cold starts would otherwise be cleared below)
+$ADB logcat -d > "$out/$name-launch-logcat.txt"
+
 # --- smoke: still alive after 6 s, no crash in logcat
 $ADB logcat -c
 sleep 6
@@ -48,6 +51,23 @@ smoke=ok
 # only count crashes of THIS app (other apps closed by the test also log "has died")
 $ADB logcat -d | grep -E "FATAL EXCEPTION|Fatal signal|has died" -A2 | grep -q "$pkg" && smoke=crashed
 log "smoke $smoke (pid ${pid:-none})"
+if [ "$smoke" = crashed ]; then
+  # newest native crash report (needs `adb root`, which emulator-run-all.sh does)
+  tomb=$($ADB shell 'ls -t /data/tombstones/ 2>/dev/null | grep -v pb | head -1' | tr -d '\r')
+  [ -n "$tomb" ] && $ADB shell cat "/data/tombstones/$tomb" > "$out/$name-tombstone.txt" 2>/dev/null
+  grep -m3 -aE "Abort message|FlappyPanic" "$out/$name-tombstone.txt" "$out/$name-launch-logcat.txt" 2>/dev/null | while read -r l; do log "  $l"; done
+fi
+
+# a frozen system app (e.g. "Pixel Launcher isn't responding") can cover the screen: press Wait
+dismiss_anr() {
+  $ADB shell uiautomator dump /sdcard/ui.xml >/dev/null 2>&1
+  if $ADB shell cat /sdcard/ui.xml | grep -q "isn't responding"; then
+    local b
+    b=$($ADB shell cat /sdcard/ui.xml | tr '>' '\n' | grep -E 'text="Wait"' | grep -oE '[0-9]+' | tail -4 | tr '\n' ' ')
+    if [ -n "$b" ]; then set -- $b; $ADB shell input tap $(( ($1 + $3) / 2 )) $(( ($2 + $4) / 2 )); log "dismissed a system 'not responding' dialog"; sleep 1; fi
+  fi
+}
+dismiss_anr
 
 # --- start the benchmark
 read -r W H < <($ADB shell wm size | grep -oE '[0-9]+x[0-9]+' | tail -1 | tr x ' ')

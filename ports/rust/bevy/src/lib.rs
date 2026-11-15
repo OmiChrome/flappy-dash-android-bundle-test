@@ -159,5 +159,6 @@ pub fn app() -> App {
 
 #[bevy_main]
 fn main() {
+    flappy_core::log_panics();
     app().run();
 }
