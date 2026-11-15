@@ -23,16 +23,16 @@ Other CPU types are in the [release](../../../releases): armv7 (old 32-bit phone
 
 ## 2. Speed and memory: Android 14 emulator
 
-Every app ran the **same 60-second autopilot course** on the same emulator ([how](CI.md)).
+Every app ran the **same 60-second autopilot course** on the same emulator ([how](CI.md), [this run](https://github.com/OmiChrome/flappy-dash-android-bundle-test/actions/runs/43667769714)).
 
 | Framework | Cold start | RAM | CPU | Avg fps | 1% low fps | Dropped frames | Sound | Vibration |
 |---|---:|---:|---:|---:|---:|---:|:---:|:---:|
-| Slint (Rust) ¹ | **0.79 s** | 42 MB | 52 % | **17.6** | **12** | **44 %** | ✅ | ✅ |
-| Java + Views | 1.75 s | **23 MB** | 65 % | 9.9 | 4 | 64 % | ✅ | ✅ |
-| Kotlin + Compose | 3.07 s | 29 MB | 51 % | 8.4 | 4 | 70 % | ✅ | ✅ |
-| Flutter | 5.14 s | 62 MB | 59 % | 7.8 | 4 | 75 % | ✅ | ✅ |
-| Expo / React Native | 4.21 s | 121 MB | 44 % | 5.0 | 3 | 83 % | ✅ | ✅ |
-| Capacitor ² | 1.85 s | 78 MB | 98 % | – | – | – | ✅ | ❌ ³ |
+| Slint (Rust) ¹ | **0.68 s** | 42 MB | 53 % | **22.9** | **15** | **17 %** | ✅ | ✅ |
+| Java + Views | 1.41 s | **23 MB** | 68 % | 12.9 | 6 | 53 % | ✅ | ✅ |
+| Kotlin + Compose | 2.33 s | 29 MB | 59 % | 11.5 | 5 | 58 % | ✅ | ✅ |
+| Flutter | 3.90 s | 62 MB | 59 % | 10.6 | 6 | 65 % | ✅ | ✅ |
+| Expo / React Native | 3.53 s | 123 MB | 46 % | 6.7 | 3 | 77 % | ✅ | ✅ |
+| Capacitor ² | 1.29 s | 80 MB | 106 % | – | – | – | ✅ | ❌ ³ |
 
 **What the columns mean**
 - **Cold start:** time from tapping the icon to the first picture.

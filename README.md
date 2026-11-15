@@ -16,12 +16,12 @@
 
 | | Framework | APK (arm64) | RAM | Cold start | Smoothness ¹ | Sound · vibration |
 |---|---|---:|---:|---:|:---:|:---:|
-| ![](https://cdn.simpleicons.org/openjdk/ED8B00) | **Java + Android Views** | 0.19 MB | 23 MB | 1.7 s | ★★★☆ | ✅ ✅ |
-| ![](https://cdn.simpleicons.org/kotlin/7F52FF) | **Kotlin + Jetpack Compose** | 0.95 MB | 29 MB | 3.1 s | ★★☆☆ | ✅ ✅ |
-| ![](https://cdn.simpleicons.org/rust/000000) | **Slint (Rust)** ² | 6.2 MB | 42 MB | **0.8 s** | ★★★★ | ✅ ✅ |
-| ![](https://cdn.simpleicons.org/capacitor/119EFF) | **Capacitor** (web app in a shell) | 5.2 MB | 78 MB | 1.9 s | – | ✅ ❌ ³ |
-| ![](https://cdn.simpleicons.org/flutter/02569B) | **Flutter** | 15.2 MB | 62 MB | 5.1 s | ★★☆☆ | ✅ ✅ |
-| ![](https://cdn.simpleicons.org/expo/000020) | **Expo / React Native** | 44.1 MB | 121 MB | 4.2 s | ★☆☆☆ | ✅ ✅ |
+| ![](https://cdn.simpleicons.org/openjdk/ED8B00) | **Java + Android Views** | 0.19 MB | 23 MB | 1.4 s | ★★★☆ | ✅ ✅ |
+| ![](https://cdn.simpleicons.org/kotlin/7F52FF) | **Kotlin + Jetpack Compose** | 0.95 MB | 29 MB | 2.3 s | ★★☆☆ | ✅ ✅ |
+| ![](https://cdn.simpleicons.org/rust/000000) | **Slint (Rust)** ² | 6.2 MB | 42 MB | **0.7 s** | ★★★★ | ✅ ✅ |
+| ![](https://cdn.simpleicons.org/capacitor/119EFF) | **Capacitor** (web app in a shell) | 5.2 MB | 80 MB | 1.3 s | – | ✅ ❌ ³ |
+| ![](https://cdn.simpleicons.org/flutter/02569B) | **Flutter** | 15.2 MB | 62 MB | 3.9 s | ★★☆☆ | ✅ ✅ |
+| ![](https://cdn.simpleicons.org/expo/000020) | **Expo / React Native** | 44.1 MB | 123 MB | 3.5 s | ★☆☆☆ | ✅ ✅ |
 
 <sub>Measured on an Android 14 emulator running the same 60-second autopilot course in every app (release v2.2.0). ¹ Stars come from frame rate and "1% low" (how bad the worst stutters are). ² The best production-ready Rust option (it draws a slightly simpler picture, which helps its smoothness); all 8 Rust options are in the [Rust benchmark](docs/BENCHMARK-RUST.md). ³ The test robot saw no vibration; it most likely never got past the menu. Full numbers and caveats: [Benchmark](docs/BENCHMARK.md).</sub>
 

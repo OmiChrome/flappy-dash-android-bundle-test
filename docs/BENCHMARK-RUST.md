@@ -24,7 +24,7 @@ Every port runs the same game engine (`ports/rust/core`, a shared Rust library),
 
 | Framework | APK | Notes |
 |---|---:|---|
-| macroquad | **0.67 MB** | Game + renderer + window + audio in one library |
+| macroquad | **0.67 MB** | Game + renderer + window + audio in one library. Lowest RAM of all Rust options (26 MB) |
 | UniFFI | 1.55 MB | Rust library + JNA (lets Kotlin call native code) + Compose |
 | Crux | 1.65 MB | Same as UniFFI, plus the Crux core |
 | Dioxus | 3.8 MB | Rust + WebView glue + sounds |
@@ -38,18 +38,18 @@ All Rust apps share one sound crate (`ports/rust/sfx`: a tiny audio mixer + Andr
 
 | Framework | Cold start | RAM | CPU | Avg fps | 1% low | Dropped | Sound | Vibration |
 |---|---:|---:|---:|---:|---:|---:|:---:|:---:|
-| **Slint** | **0.79 s** | 42 MB | 52 % | **17.6** | **12** | 44 % | ✅ | ✅ |
-| Crux | 1.28 s | **29 MB** | 54 % | 16.7 | 7 | **39 %** | ✅ | ✅ |
-| UniFFI | 1.23 s | **29 MB** | 54 % | 16.7 | 8 | **39 %** | ✅ | ✅ |
-| Dioxus | 1.49 s | 78 MB | 84 % | 15.2 | 8 | 51 % | ✅ | ✅ |
-| Bevy | 1.41 s | 98 MB | 68 % | – ² | – | – | ✅ | ✅ |
-| Tauri | 1.09 s | 93 MB | 76 % | – ⁴ | – | – | ✅ | ✅ |
-| macroquad | – | – | – | – ³ | – | – | – | – |
+| **Slint** | **0.68 s** | 42 MB | 53 % | **22.9** | **15** | **17 %** | ✅ | ✅ |
+| UniFFI | 1.09 s | **29 MB** | 57 % | 21.1 | 9 | 19 % | ✅ | ✅ |
+| Crux | 0.92 s | **29 MB** | 57 % | 21.0 | 9 | 19 % | ✅ | ✅ |
+| Dioxus | 1.30 s | 75 MB | 89 % | 20.1 | 11 | 44 % | ✅ | ✅ |
+| macroquad | 0.75 s | **26 MB** | **51 %** | 16.6 | 11 | 47 % | ✅ | ✅ |
+| Bevy | 1.18 s | 98 MB | 79 % | – ² | – | – | ✅ | ✅ |
+| Tauri | 0.70 s | 90 MB | 73 % | – ⁴ | – | – | ✅ | ✅ |
 
 - The emulator has no real GPU, so all fps numbers are low. Compare rows with each other.
 - All rows above draw the **same simplified picture** (circles and rectangles from the shared draw list), so this table is a fair fight.
 - ² Bevy started fine (smoke test ✅) but didn't log its benchmark result within 100 s.
-- ³ macroquad asked the emulator's software GPU for 4× anti-aliasing (smoothed edges), which it doesn't offer, and closed. Fixed for the next release: Android builds now ask for none. Before v2.2.0 it also looked for the wrong library name.
+- macroquad runs on the emulator since v2.2.0. Two bugs had stopped it: it looked for the wrong library name, and it asked the emulator's software GPU for 4× anti-aliasing (smoothed edges), which isn't offered. Android builds now ask for none.
 - ⁴ Tauri shows a web page (the Expo web build), whose benchmark button the test robot can't press, same as Capacitor. It is the heaviest Rust option on RAM and CPU because it runs a whole web engine.
 - Several emulator runs gave the same ranking (frame rates vary about ±15 %, start times up to ±40 %).
 
@@ -78,7 +78,7 @@ Without a GPU, WebGL (macroquad) is emulated in software and costs the most. Dio
 | Keep a 100 % native UI, share logic in Rust | **Crux** (structured) or **UniFFI** (simple bindings): lowest RAM, about 1.5 MB |
 | Web skills, small app | **Tauri** (stable) |
 | React-style Rust UI | **Dioxus**, but it uses a WebView, so more RAM and CPU |
-| Smallest possible game | **macroquad** (0.44 MB) |
+| Smallest possible game | **macroquad** (0.67 MB, 26 MB RAM) |
 | Big 2D/3D game | **Bevy**: heaviest here, but a full engine |
 
 The best Rust option overall is in the main [Benchmark](BENCHMARK.md) next to Expo, Flutter and native Android.
