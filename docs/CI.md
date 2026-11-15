@@ -4,13 +4,14 @@
 
 Everything builds and tests on GitHub's computers, so you don't need Android Studio, an emulator or a Mac.
 
-## The 3 workflows
+## The 4 workflows
 
 | Workflow | What it does | How to start it |
 |---|---|---|
 | **Release** (`release.yml`) | Builds every Expo format (Android APKs, Play Store AAB, iOS) and publishes a GitHub Release | Actions → Release → *Run workflow* |
 | **Ports** (`ports.yml`) | Builds every other framework for every platform it supports, and adds the files to the same release | Actions → Ports → *Run workflow* |
 | **Android emulator tests** (`android-test.yml`) | Installs every app on an Android 14 emulator, checks it starts, and benchmarks it | Runs on every push to `main`, or Actions → *Run workflow* |
+| **Audio + haptics probe** (`audio-probe.yml`) | Taps a few flaps in every app on an emulator **with sound on**, and checks it opened an audio stream and asked to vibrate | Actions → *Run workflow* |
 
 > **Emulator** = a pretend Android phone running on a computer. GitHub's Linux machines have **KVM** (hardware virtualisation: the CPU runs the phone directly, so it's fast).
 
@@ -61,4 +62,5 @@ gh workflow run android-test.yml --repo OmiChrome/flappy-dash-android-bundle-tes
 | [`bench/emulator-summary.py`](../bench/emulator-summary.py) | Makes the results table |
 | [`bench/desktop-bench.sh`](../bench/desktop-bench.sh) | Same idea for desktop builds on a virtual screen |
 | [`bench/web-bench.cjs`](../bench/web-bench.cjs) | Same idea for web builds in Chrome |
+| [`bench/audio-probe.sh`](../bench/audio-probe.sh) | Sound + vibration check for one app ([plan](../bench/audio-plan.txt)) |
 | [`bench/apk-size.py`](../bench/apk-size.py) | Shows what's inside an APK |

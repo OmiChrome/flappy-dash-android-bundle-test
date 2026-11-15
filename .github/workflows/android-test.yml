@@ -12,7 +12,7 @@ on:
       tag:
         description: 'Release tag whose APKs to benchmark'
         required: true
-        default: 'v2.1.0'
+        default: 'v2.2.0'
   push:
     branches: [main]
     paths: ['ports/kotlin-compose/**', 'bench/emulator-*', '.github/workflows/android-test.yml']
@@ -21,7 +21,7 @@ permissions:
   contents: read
 
 env:
-  TAG: ${{ github.event.inputs.tag || 'v2.1.0' }}
+  TAG: ${{ github.event.inputs.tag || 'v2.2.0' }}
 
 jobs:
   ui-test:
